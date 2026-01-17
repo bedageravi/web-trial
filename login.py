@@ -1,18 +1,84 @@
+import json
+import pyotp
+import requests
 import streamlit as st
+from pathlib import Path
+
+# =========================
+# TEMP HARD-CODED (TEST ONLY)
+# =========================
+ACCESS_TOKEN_SHORT = "ce5191a8-b2d3-44ff-bc3c-65970498e2f0"
+MOBILE = "+919766728415"
+UCC = "XXTBL"
+TOTP_SECRET = "OBEESAYVC2V3IA5YYHCN6EB7UI"
+
+AUTH_FILE = Path("auth.json")
+
+HEADERS = {
+    "Auth": None,
+    "Sid": None,
+    "neo-fin-key": "neotradeapi",
+    "accept": "application/json"
+}
+
+def kotak_login(mpin_input: str):
+    totp = pyotp.TOTP(TOTP_SECRET).now()
+
+    headers = {
+        "Authorization": ACCESS_TOKEN_SHORT,
+        "neo-fin-key": "neotradeapi",
+        "Content-Type": "application/json"
+    }
+
+    # STEP 1
+    r1 = requests.post(
+        "https://mis.kotaksecurities.com/login/1.0/tradeApiLogin",
+        headers=headers,
+        json={"mobileNumber": MOBILE, "ucc": UCC, "totp": totp}
+    )
+
+    data1 = r1.json().get("data", {})
+    view_token = data1.get("token")
+    view_sid = data1.get("sid")
+
+    if not view_token or not view_sid:
+        return False, "Step 1 login failed"
+
+    # STEP 2
+    headers2 = headers.copy()
+    headers2["sid"] = view_sid
+    headers2["Auth"] = view_token
+
+    r2 = requests.post(
+        "https://mis.kotaksecurities.com/login/1.0/tradeApiValidate",
+        headers=headers2,
+        json={"mpin": mpin_input}
+    )
+
+    data2 = r2.json().get("data", {})
+    auth_token = data2.get("token")
+    auth_sid = data2.get("sid")
+
+    if not auth_token or not auth_sid:
+        return False, "Step 2 validation failed"
+
+    with open(AUTH_FILE, "w") as f:
+        json.dump(data2, f, indent=2)
+
+    HEADERS["Auth"] = auth_token
+    HEADERS["Sid"] = auth_sid
+
+    return True, "Kotak login successful"
 
 def login_page():
-    st.subheader("🔐 Login")
+    st.subheader("🔐 Kotak Neo Login")
 
-    # Initialize session state
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    mpin = st.text_input("Enter MPIN", type="password")
 
     if st.button("Login"):
-        # DEMO logic only
-        if username == "admin" and password == "admin":
+        success, msg = kotak_login(mpin)
+        if success:
             st.session_state.logged_in = True
+            st.success(msg)
         else:
-            st.error("Invalid credentials")
+            st.error(msg)
