@@ -52,8 +52,10 @@ with st.spinner("Fetching Orders..."):
 st.divider()
 
 # -----------------------------
-# LOGOUT
+# LOGOUT (Safe version)
 # -----------------------------
 if st.button("Logout"):
     st.session_state.logged_in = False
-    st.experimental_rerun()
+    st.success("Logged out successfully!")
+    # Instead of experimental_rerun, just stop execution for now
+    st.stop()
