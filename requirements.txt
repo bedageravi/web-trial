@@ -6,3 +6,4 @@ git+https://github.com/rongardF/tvdatafeed.git
 pyotp
 pytz
 numpy
+yfinance
