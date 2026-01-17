@@ -1,5 +1,8 @@
+# Neo API SDK
+git+https://github.com/Kotak-Neo/Kotak-neo-api-v2.git@v2.0.1#egg=neo_api_client
+
+# Streamlit and login dependencies
 streamlit==1.39.0
-git+https://github.com/Kotak-Neo/Kotak-neo-api-v2.git@v2.0.1
 pyotp
 pytz
 requests
