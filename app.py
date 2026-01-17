@@ -1,7 +1,14 @@
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 from login import login_page
 from positions import get_positions
 from orders import get_orders
+
+# -------------------------
+# AUTO-REFRESH
+# -------------------------
+# Refresh every 60 seconds (60 * 1000 ms)
+count = st_autorefresh(interval=60 * 1000, limit=None, key="refresh_counter")
 
 st.set_page_config(page_title="Trading Web App", layout="wide")
 st.title("📈 Trading Web App")
