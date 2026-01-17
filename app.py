@@ -7,7 +7,7 @@ from orders import get_orders
 # =============================
 # AUTO-REFRESH EVERY 1 MINUTE
 # =============================
-count = st_autorefresh(interval=60*1000, limit=None, key="refresh_counter")
+count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
 st.set_page_config(page_title="Trading Web App", layout="wide")
 st.title("📈 Trading Web App")
@@ -17,13 +17,15 @@ st.title("📈 Trading Web App")
 # -----------------------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+if "manual_refresh" not in st.session_state:
+    st.session_state.manual_refresh = 0
 
 # -----------------------------
 # CHECK TOKEN
 # -----------------------------
 auth_data = load_auth()
 if auth_data is None:
-    st.session_state.logged_in = False  # token expired
+    st.session_state.logged_in = False
 else:
     st.session_state.logged_in = True
 
@@ -39,7 +41,7 @@ else:
     # MANUAL REFRESH BUTTON
     # -------------------------
     if st.button("🔄 Refresh Dashboard"):
-        st.experimental_rerun()  # safe here because it's inside button callback
+        st.session_state.manual_refresh += 1  # triggers rerun automatically
 
     # -------------------------
     # POSITIONS
