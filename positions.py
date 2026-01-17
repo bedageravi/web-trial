@@ -1,6 +1,6 @@
 import pandas as pd
 import requests
-from login import load_auth
+from login import load_auth   # ✅ correct import
 
 HEADERS = {
     "Auth": None,
@@ -10,13 +10,16 @@ HEADERS = {
 }
 
 def get_positions():
-    """Fetch Kotak MTF positions"""
+    """Fetch Kotak MTF positions from auth.json"""
 
     auth_data = load_auth()
     if not auth_data:
-        return None, "Auth not found. Please login first."
+        return None, "Auth file not found. Please login first."
 
     base_url = auth_data.get("BASE_URL")
+    if not base_url:
+        return None, "BASE_URL missing. Please login again."
+
     HEADERS["Auth"] = auth_data.get("AUTH_TOKEN")
     HEADERS["Sid"] = auth_data.get("AUTH_SID")
 
@@ -30,6 +33,7 @@ def get_positions():
     except Exception as e:
         return None, f"Error fetching positions: {e}"
 
+    # === SAME MTF LOGIC AS YOUR PC SCRIPT ===
     mtf_positions = []
 
     for p in data:
