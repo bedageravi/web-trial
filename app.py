@@ -1,5 +1,5 @@
 import streamlit as st
-from login import login_page
+from login import login_page, load_auth
 from positions import get_positions
 from orders import get_orders
 
@@ -52,10 +52,9 @@ with st.spinner("Fetching Orders..."):
 st.divider()
 
 # -----------------------------
-# LOGOUT (Safe version)
+# LOGOUT (Session-state safe)
 # -----------------------------
 if st.button("Logout"):
     st.session_state.logged_in = False
     st.success("Logged out successfully!")
-    # Instead of experimental_rerun, just stop execution for now
-    st.stop()
+    st.stop()  # return to login page automatically
