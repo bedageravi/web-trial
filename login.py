@@ -4,22 +4,13 @@ import requests
 import streamlit as st
 from pathlib import Path
 
-# =========================
-# AUTH FILE
-# =========================
 AUTH_FILE = Path("auth.json")
 
-# =========================
-# LOAD SECRETS
-# =========================
 ACCESS_TOKEN_SHORT = st.secrets["kotak"]["access_token"]
 MOBILE = st.secrets["kotak"]["mobile"]
 UCC = st.secrets["kotak"]["ucc"]
 TOTP_SECRET = st.secrets["kotak"]["totp_secret"]
 
-# =========================
-# HEADERS
-# =========================
 HEADERS = {
     "Auth": None,
     "Sid": None,
@@ -27,9 +18,6 @@ HEADERS = {
     "accept": "application/json"
 }
 
-# =========================
-# KOTAK LOGIN FUNCTION
-# =========================
 def kotak_login(mpin_input: str):
     totp = pyotp.TOTP(TOTP_SECRET).now()
     headers = {
@@ -75,7 +63,6 @@ def kotak_login(mpin_input: str):
     if not auth_token or not auth_sid:
         return False, "Step2 failed: Invalid response"
 
-    # Save auth.json
     AUTH_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(AUTH_FILE, "w") as f:
         json.dump({"AUTH_TOKEN": auth_token, "AUTH_SID": auth_sid, "BASE_URL": base_url}, f, indent=2)
@@ -85,14 +72,10 @@ def kotak_login(mpin_input: str):
 
     return True, "Kotak login successful ✅"
 
-# =========================
-# STREAMLIT LOGIN PAGE
-# =========================
 def login_page():
     st.subheader("🔐 Kotak Neo Login")
     mpin = st.text_input("Enter MPIN", type="password")
 
-    # Initialize session flags
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
     if "login_success" not in st.session_state:
@@ -100,7 +83,6 @@ def login_page():
     if "login_msg" not in st.session_state:
         st.session_state.login_msg = ""
 
-    # Login button
     if st.button("Login"):
         with st.spinner("Logging in..."):
             success, msg = kotak_login(mpin)
@@ -109,15 +91,12 @@ def login_page():
             if success:
                 st.session_state.logged_in = True
 
-    # Display messages
+    # Show messages
     if st.session_state.login_success:
         st.success(st.session_state.login_msg)
     elif st.session_state.login_msg:
         st.error(st.session_state.login_msg)
 
-# =========================
-# LOAD AUTH FOR POSITIONS / ORDERS
-# =========================
 def load_auth():
     if AUTH_FILE.exists():
         with open(AUTH_FILE, "r") as f:
