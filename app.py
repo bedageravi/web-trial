@@ -3,35 +3,20 @@ from login import login_page
 from positions import get_positions
 from orders import get_orders
 
-# =============================
-# PAGE CONFIG
-# =============================
-st.set_page_config(
-    page_title="Trading Web App",
-    layout="wide"
-)
-
+st.set_page_config(page_title="Trading Web App", layout="wide")
 st.title("📈 Trading Web App")
 
-# =============================
-# SESSION INIT
-# =============================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# =============================
-# LOGIN FLOW
-# =============================
+# LOGIN
 if not st.session_state.logged_in:
     login_page()
     st.stop()  # stop until login success
 
-# =============================
 # DASHBOARD
-# =============================
 st.success("Welcome! Login successful 🎉")
 
-# Two columns: Positions | Orders
 col1, col2 = st.columns(2)
 
 with col1:
@@ -54,9 +39,6 @@ with col2:
 
 st.divider()
 
-# =============================
-# LOGOUT
-# =============================
 if st.button("Logout"):
     st.session_state.logged_in = False
     st.experimental_rerun()
