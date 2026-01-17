@@ -7,10 +7,10 @@ from pathlib import Path
 # =========================
 # AUTH FILE
 # =========================
-AUTH_FILE = Path("auth.json")  # stores Kotak session info
+AUTH_FILE = Path("auth.json")
 
 # =========================
-# LOAD SECRETS FROM STREAMLIT
+# LOAD SECRETS
 # =========================
 ACCESS_TOKEN_SHORT = st.secrets["kotak"]["access_token"]
 MOBILE = st.secrets["kotak"]["mobile"]
@@ -18,7 +18,7 @@ UCC = st.secrets["kotak"]["ucc"]
 TOTP_SECRET = st.secrets["kotak"]["totp_secret"]
 
 # =========================
-# DEFAULT HEADERS
+# HEADERS
 # =========================
 HEADERS = {
     "Auth": None,
@@ -31,9 +31,6 @@ HEADERS = {
 # KOTAK LOGIN FUNCTION
 # =========================
 def kotak_login(mpin_input: str):
-    """
-    Perform Kotak login and save auth.json
-    """
     totp = pyotp.TOTP(TOTP_SECRET).now()
     headers = {
         "Authorization": ACCESS_TOKEN_SHORT,
@@ -41,7 +38,6 @@ def kotak_login(mpin_input: str):
         "Content-Type": "application/json"
     }
 
-    # ===== STEP 1: tradeApiLogin =====
     try:
         r1 = requests.post(
             "https://mis.kotaksecurities.com/login/1.0/tradeApiLogin",
@@ -53,12 +49,11 @@ def kotak_login(mpin_input: str):
         view_token = data1.get("token")
         view_sid = data1.get("sid")
     except Exception as e:
-        return False, f"Login Step1 failed: {e}"
+        return False, f"Step1 failed: {e}"
 
     if not view_token or not view_sid:
-        return False, "Login Step1 failed: Invalid response"
+        return False, "Step1 failed: Invalid response"
 
-    # ===== STEP 2: tradeApiValidate =====
     headers2 = headers.copy()
     headers2["sid"] = view_sid
     headers2["Auth"] = view_token
@@ -75,19 +70,15 @@ def kotak_login(mpin_input: str):
         auth_sid = data2.get("sid")
         base_url = data2.get("baseUrl")
     except Exception as e:
-        return False, f"Login Step2 failed: {e}"
+        return False, f"Step2 failed: {e}"
 
     if not auth_token or not auth_sid:
-        return False, "Login Step2 failed: Invalid response"
+        return False, "Step2 failed: Invalid response"
 
-    # ===== SAVE AUTH FILE =====
+    # Save auth.json
     AUTH_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(AUTH_FILE, "w") as f:
-        json.dump(
-            {"AUTH_TOKEN": auth_token, "AUTH_SID": auth_sid, "BASE_URL": base_url},
-            f,
-            indent=2
-        )
+        json.dump({"AUTH_TOKEN": auth_token, "AUTH_SID": auth_sid, "BASE_URL": base_url}, f, indent=2)
 
     HEADERS["Auth"] = auth_token
     HEADERS["Sid"] = auth_sid
@@ -95,24 +86,32 @@ def kotak_login(mpin_input: str):
     return True, "Kotak login successful ✅"
 
 # =========================
-# STREAMLIT LOGIN PAGE
+# STREAMLIT LOGIN PAGE (Cloud-safe)
 # =========================
 def login_page():
     st.subheader("🔐 Kotak Neo Login")
     mpin = st.text_input("Enter MPIN", type="password")
 
+    # Initialize session flags
+    if "login_success" not in st.session_state:
+        st.session_state.login_success = False
+    if "login_msg" not in st.session_state:
+        st.session_state.login_msg = ""
+
     if st.button("Login"):
-        # 🔹 Run login inside spinner
         with st.spinner("Logging in..."):
             success, msg = kotak_login(mpin)
+            st.session_state.login_success = success
+            st.session_state.login_msg = msg
 
-        # 🔹 Rerun safely AFTER spinner exits
-        if success:
-            st.session_state.logged_in = True
-            st.success(msg)
-            st.experimental_rerun()  # Safe rerun
-        else:
-            st.error(msg)
+    # Handle rerun safely after button press
+    if st.session_state.login_success:
+        st.session_state.logged_in = True
+        st.success(st.session_state.login_msg)
+        # Clear the flag to avoid infinite rerun loop
+        st.session_state.login_success = False
+        st.session_state.login_msg = ""
+        st.experimental_rerun()  # Safe rerun outside direct button callback
 
 # =========================
 # LOAD AUTH FOR POSITIONS / ORDERS
