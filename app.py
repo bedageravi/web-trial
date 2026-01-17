@@ -1,8 +1,12 @@
 import streamlit as st
+from login import login  # Import the login function
 
 st.title("Minimal Login Test")
 
-def login_demo():
-    st.write("Login module will be tested here.")
+# Call login function
+client = login()
 
-login_demo()
+if client:
+    st.write("Neo client initialized successfully!")
+else:
+    st.write("Login failed or client not initialized.")
