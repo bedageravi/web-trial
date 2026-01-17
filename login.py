@@ -86,32 +86,34 @@ def kotak_login(mpin_input: str):
     return True, "Kotak login successful ✅"
 
 # =========================
-# STREAMLIT LOGIN PAGE (Cloud-safe)
+# STREAMLIT LOGIN PAGE
 # =========================
 def login_page():
     st.subheader("🔐 Kotak Neo Login")
     mpin = st.text_input("Enter MPIN", type="password")
 
     # Initialize session flags
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
     if "login_success" not in st.session_state:
         st.session_state.login_success = False
     if "login_msg" not in st.session_state:
         st.session_state.login_msg = ""
 
+    # Login button
     if st.button("Login"):
         with st.spinner("Logging in..."):
             success, msg = kotak_login(mpin)
             st.session_state.login_success = success
             st.session_state.login_msg = msg
+            if success:
+                st.session_state.logged_in = True
 
-    # Handle rerun safely after button press
+    # Display messages
     if st.session_state.login_success:
-        st.session_state.logged_in = True
         st.success(st.session_state.login_msg)
-        # Clear the flag to avoid infinite rerun loop
-        st.session_state.login_success = False
-        st.session_state.login_msg = ""
-        st.experimental_rerun()  # Safe rerun outside direct button callback
+    elif st.session_state.login_msg:
+        st.error(st.session_state.login_msg)
 
 # =========================
 # LOAD AUTH FOR POSITIONS / ORDERS
