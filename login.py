@@ -99,19 +99,20 @@ def kotak_login(mpin_input: str):
 # =========================
 def login_page():
     st.subheader("🔐 Kotak Neo Login")
-
-    # MPIN input
     mpin = st.text_input("Enter MPIN", type="password")
 
     if st.button("Login"):
-        with st.spinner("Logging in, please wait..."):
+        # 🔹 Run login inside spinner
+        with st.spinner("Logging in..."):
             success, msg = kotak_login(mpin)
-            if success:
-                st.session_state.logged_in = True
-                st.success(msg)
-                st.experimental_rerun()  # 🔥 Force rerun to show dashboard
-            else:
-                st.error(msg)
+
+        # 🔹 Rerun safely AFTER spinner exits
+        if success:
+            st.session_state.logged_in = True
+            st.success(msg)
+            st.experimental_rerun()  # Safe rerun
+        else:
+            st.error(msg)
 
 # =========================
 # LOAD AUTH FOR POSITIONS / ORDERS
