@@ -20,40 +20,40 @@ if "logged_in" not in st.session_state:
 # =============================
 if not st.session_state.logged_in:
     login_page()
-    st.stop()  # stop until login success
+    st.stop()  # stop execution until login is successful
 
 # =============================
-# DASHBOARD
+# DASHBOARD AFTER LOGIN
 # =============================
-st.success("Welcome! Login successful 🎉")
+st.success("✅ Login successful. Fetching data...")
 
-# =============================
-# AUTO-LOAD POSITIONS
-# =============================
-with st.spinner("Fetching positions..."):
-    df_pos, msg_pos = get_positions()
-    if df_pos is not None:
-        st.subheader("📊 Positions")
-        st.dataframe(df_pos, use_container_width=True)
+# -----------------------------
+# POSITIONS
+# -----------------------------
+with st.spinner("Fetching Positions..."):
+    df_positions, msg_pos = get_positions()
+    if df_positions is not None:
+        st.subheader("📊 MTF Positions")
+        st.dataframe(df_positions, use_container_width=True)
     else:
         st.warning(msg_pos)
 
-# =============================
-# AUTO-LOAD ORDERS
-# =============================
-with st.spinner("Fetching orders..."):
-    df_ord, msg_ord = get_orders()
-    if df_ord is not None:
-        st.subheader("🧾 Orders")
-        st.dataframe(df_ord, use_container_width=True)
+# -----------------------------
+# ORDERS
+# -----------------------------
+with st.spinner("Fetching Orders..."):
+    df_orders, msg_ord = get_orders()
+    if df_orders is not None:
+        st.subheader("🧾 Today's Orders")
+        st.dataframe(df_orders, use_container_width=True)
     else:
         st.warning(msg_ord)
 
 st.divider()
 
-# ============================
+# -----------------------------
 # LOGOUT
-# =============================
+# -----------------------------
 if st.button("Logout"):
     st.session_state.logged_in = False
     st.experimental_rerun()
