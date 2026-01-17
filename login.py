@@ -1,22 +1,25 @@
 import json
 import pyotp
 import requests
+import os
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()  # load .env variables
 
 AUTH_FILE = Path("login/auth.json")  # save token here
 
-# Kotak credentials (replace with your details)
-ACCESS_TOKEN_SHORT = "ce5191a8-b2d3-44ff-bc3c-65970498e2f0"
-MOBILE = "+919766728415"
-UCC = "XXTBL"
-MPIN = ""  # will take input
-TOTP_SECRET = "OBEESAYVC2V3IA5YYHCN6EB7UI"
+# Load sensitive info from environment
+ACCESS_TOKEN_SHORT = os.getenv("ACCESS_TOKEN_SHORT")
+MOBILE = os.getenv("MOBILE")
+UCC = os.getenv("UCC")
+TOTP_SECRET = os.getenv("TOTP_SECRET")
 
 HEADERS = {"Auth": None, "Sid": None, "neo-fin-key": "neotradeapi", "accept": "application/json"}
+MPIN = ""  # will take input
 
 def kotak_login(mpin_input: str):
-    """Perform login and save auth.json"""
     global MPIN
     MPIN = mpin_input
 
