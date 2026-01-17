@@ -1,8 +1,13 @@
+# Kotak Neo API client from GitHub
 git+https://github.com/Kotak-Neo/Kotak-neo-api-v2.git@v2.0.1#egg=neo_api_client
+
+# TradingView Datafeed
 git+https://github.com/rongardF/tvdatafeed.git
-pyotp
-requests
-pandas
-pytz
-numpy
-yfinance
+
+# Utilities
+pyotp==2.8.0
+requests==2.31.0
+pandas==2.2.1
+pytz==2023.3
+numpy==1.26.5
+yfinance==0.2.41
