@@ -3,14 +3,24 @@ import pyotp
 import requests
 import streamlit as st
 from pathlib import Path
+import time
 
+# =========================
+# AUTH FILE
+# =========================
 AUTH_FILE = Path("auth.json")
 
+# =========================
+# LOAD SECRETS
+# =========================
 ACCESS_TOKEN_SHORT = st.secrets["kotak"]["access_token"]
 MOBILE = st.secrets["kotak"]["mobile"]
 UCC = st.secrets["kotak"]["ucc"]
 TOTP_SECRET = st.secrets["kotak"]["totp_secret"]
 
+# =========================
+# HEADERS
+# =========================
 HEADERS = {
     "Auth": None,
     "Sid": None,
@@ -18,6 +28,9 @@ HEADERS = {
     "accept": "application/json"
 }
 
+# =========================
+# KOTAK LOGIN FUNCTION
+# =========================
 def kotak_login(mpin_input: str):
     totp = pyotp.TOTP(TOTP_SECRET).now()
     headers = {
@@ -63,15 +76,24 @@ def kotak_login(mpin_input: str):
     if not auth_token or not auth_sid:
         return False, "Step2 failed: Invalid response"
 
+    # Save token with expiry (5 min example)
     AUTH_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(AUTH_FILE, "w") as f:
-        json.dump({"AUTH_TOKEN": auth_token, "AUTH_SID": auth_sid, "BASE_URL": base_url}, f, indent=2)
+        json.dump({
+            "AUTH_TOKEN": auth_token,
+            "AUTH_SID": auth_sid,
+            "BASE_URL": base_url,
+            "EXPIRES_AT": time.time() + 5*60  # 5 minutes token validity
+        }, f, indent=2)
 
     HEADERS["Auth"] = auth_token
     HEADERS["Sid"] = auth_sid
 
     return True, "Kotak login successful ✅"
 
+# =========================
+# STREAMLIT LOGIN PAGE
+# =========================
 def login_page():
     st.subheader("🔐 Kotak Neo Login")
     mpin = st.text_input("Enter MPIN", type="password")
@@ -97,8 +119,16 @@ def login_page():
     elif st.session_state.login_msg:
         st.error(st.session_state.login_msg)
 
+# =========================
+# LOAD AUTH FOR POSITIONS / ORDERS
+# =========================
 def load_auth():
     if AUTH_FILE.exists():
         with open(AUTH_FILE, "r") as f:
-            return json.load(f)
+            data = json.load(f)
+        # Check token expiry
+        if data.get("EXPIRES_AT", 0) > time.time():
+            HEADERS["Auth"] = data["AUTH_TOKEN"]
+            HEADERS["Sid"] = data["AUTH_SID"]
+            return data
     return None
