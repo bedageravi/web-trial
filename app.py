@@ -1,12 +1,15 @@
 import streamlit as st
-from login import login  # Import the login function
+from login import kotak_login, load_auth
 
-st.title("Minimal Login Test")
+st.title("Kotak Login Test")
 
-# Call login function
-client = login()
+mpin = st.text_input("Enter MPIN", type="password")
 
-if client:
-    st.write("Neo client initialized successfully!")
-else:
-    st.write("Login failed or client not initialized.")
+if st.button("Login"):
+    success, message = kotak_login(mpin)
+    if success:
+        st.success(message)
+        auth_data = load_auth()
+        st.json(auth_data)
+    else:
+        st.error(message)
