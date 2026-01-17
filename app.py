@@ -24,7 +24,7 @@ if "logged_in" not in st.session_state:
 # =============================
 if not st.session_state.logged_in:
     login_page()
-    st.stop()  # stop until login
+    st.stop()  # stop until login success
 
 # =============================
 # DASHBOARD
