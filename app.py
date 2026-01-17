@@ -51,7 +51,7 @@ with st.spinner("Fetching orders..."):
 
 st.divider()
 
-# =============================
+# ============================
 # LOGOUT
 # =============================
 if st.button("Logout"):
