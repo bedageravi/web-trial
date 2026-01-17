@@ -36,6 +36,12 @@ else:
     st.success("✅ Logged in. Fetching data...")
 
     # -------------------------
+    # MANUAL REFRESH BUTTON
+    # -------------------------
+    if st.button("🔄 Refresh Dashboard"):
+        st.experimental_rerun()  # safe here because it's inside button callback
+
+    # -------------------------
     # POSITIONS
     # -------------------------
     with st.spinner("Fetching Positions..."):
