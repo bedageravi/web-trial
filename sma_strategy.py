@@ -1,4 +1,4 @@
-# strategy/sma_strategy.py
+import os
 import pandas as pd
 from datetime import datetime
 import yfinance as yf
@@ -6,10 +6,11 @@ from tvDatafeed import TvDatafeed, Interval
 import pytz
 
 # ---------------------- CONFIG ----------------------
-TV_USERNAME = "bedageravi605@gmail.com"
-TV_PASSWORD = "Anujbedage@45678"
 TOUCH_PCT = 0.25  # % distance to detect touch
 IST = pytz.timezone("Asia/Kolkata")
+
+TV_USERNAME = os.getenv("TV_USERNAME")
+TV_PASSWORD = os.getenv("TV_PASSWORD")
 
 # Map Streamlit intervals to TVDatafeed intervals
 INTERVAL_MAP = {
@@ -24,9 +25,13 @@ INTERVAL_MAP = {
 
 # ---------------------- INIT TV ----------------------
 try:
-    tv = TvDatafeed(TV_USERNAME, TV_PASSWORD)
+    if TV_USERNAME and TV_PASSWORD:
+        tv = TvDatafeed(TV_USERNAME, TV_PASSWORD)
+    else:
+        tv = TvDatafeed()  # anonymous login
 except:
-    tv = TvDatafeed()  # anonymous login
+    tv = TvDatafeed()  # fallback anonymous
+
 
 # ---------------------- STRATEGY FUNCTION ----------------------
 def run_stock_strategy(symbol, interval="5m", sma_periods=[200,377,610]):
@@ -116,3 +121,4 @@ def run_stock_strategy(symbol, interval="5m", sma_periods=[200,377,610]):
         "latest_close": latest_close,
         "smas": smas_info
     }]
+
