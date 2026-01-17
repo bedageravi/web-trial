@@ -1,34 +1,39 @@
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
-from login import login_page
+from login import login_page, load_auth
 from positions import get_positions
 from orders import get_orders
 
 # =============================
-# AUTO-REFRESH
+# AUTO-REFRESH EVERY 1 MINUTE
 # =============================
-# Refresh every 1 minute (60,000 ms)
 count = st_autorefresh(interval=60*1000, limit=None, key="refresh_counter")
 
-# =============================
-# PAGE CONFIG
-# =============================
 st.set_page_config(page_title="Trading Web App", layout="wide")
 st.title("📈 Trading Web App")
 
-# =============================
+# -----------------------------
 # SESSION INIT
-# =============================
+# -----------------------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# =============================
+# -----------------------------
+# CHECK TOKEN
+# -----------------------------
+auth_data = load_auth()
+if auth_data is None:
+    st.session_state.logged_in = False  # token expired
+else:
+    st.session_state.logged_in = True
+
+# -----------------------------
 # LOGIN OR DASHBOARD FLOW
-# =============================
+# -----------------------------
 if not st.session_state.logged_in:
     login_page()
 else:
-    st.success("✅ Login successful. Fetching data...")
+    st.success("✅ Logged in. Fetching data...")
 
     # -------------------------
     # POSITIONS
