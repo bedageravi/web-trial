@@ -7,7 +7,7 @@ import pandas as pd
 import random
 
 # =============================
-# AUTO REFRESH (60 seconds)
+# AUTO REFRESH (60 sec)
 # =============================
 st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
@@ -104,11 +104,13 @@ else:
 
             st.subheader("📊 MTF Positions")
 
+            # Overall P&L metrics
             col1, col2 = st.columns(2)
             col1.metric("Overall P&L (₹)", summary["total_pnl"])
             col2.metric("Overall Return %", summary["total_pct"])
 
-            st.dataframe(df_positions, use_container_width=True)
+            # Positions table
+            st.dataframe(df_positions, width='stretch')
         else:
             st.warning(result[1] if result else "No positions found")
 
@@ -119,7 +121,7 @@ else:
         df_orders, msg_ord = get_orders()
         if df_orders is not None:
             st.subheader("🧾 Today's Orders")
-            st.dataframe(df_orders, use_container_width=True)
+            st.dataframe(df_orders, width='stretch')
         else:
             st.warning(msg_ord)
 
