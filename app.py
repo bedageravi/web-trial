@@ -54,7 +54,7 @@ selected_image = random.choice(IMAGE_LIST)
 # =============================
 # TOP IMAGE (MEDIUM SIZE)
 # =============================
-st.image(selected_image, width=500)
+st.image(selected_image, width=300)
 
 # =============================
 # HERO TEXT
