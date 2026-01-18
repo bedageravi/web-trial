@@ -68,9 +68,10 @@ st.markdown(
 st.markdown("""
 <div style="text-align:center; color:white; padding-top:10px; padding-bottom:25px;">
     <h1 style="font-size:42px;">Build Your Automated Trading System</h1>
-    <h2 style="font-size:30px;">ALGO TRADE ™</h2>
+    <h2 style="font-size:30px;">KOTAK ALGO TRADE ™</h2>
 </div>
 """, unsafe_allow_html=True)
+
 
 # =============================
 # SESSION INIT
