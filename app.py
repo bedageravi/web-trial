@@ -12,9 +12,14 @@ count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
 import streamlit as st
 
-st.set_page_config(page_title="Algo Trade", layout="wide")
+st.title("📈 Trading Web App")
 
+st.markdown("### Watch Live Candlestick/Bull Video:")
+
+# Put video **in front**, Streamlit component style
 VIDEO_URL = "https://cdn.pixabay.com/video/2020/01/14/31251-385265625_large.mp4"
+st.video(VIDEO_URL, start_time=0)
+
 
 st.markdown(
     f"""
