@@ -3,15 +3,12 @@ from streamlit_autorefresh import st_autorefresh
 from login import login_page, load_auth
 from positions import get_positions
 from orders import get_orders
-import base64
+import pandas as pd
 
 # =============================
 # AUTO-REFRESH EVERY 1 MINUTE
 # =============================
 count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
-
-import streamlit as st
-import pandas as pd
 
 # =============================
 # PAGE CONFIG
@@ -19,60 +16,55 @@ import pandas as pd
 st.set_page_config(page_title="Algo Trade", layout="wide")
 
 # =============================
-# SET FULL PAGE BACKGROUND IMAGE
+# HERO IMAGE TOP + BLACK BACKGROUND BOTTOM
 # =============================
-def set_bg_image(image_url):
-    st.markdown(
-        f"""
-        <style>
-        [data-testid="stAppViewContainer"] {{
-            background-image: url("{image_url}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }}
-        [data-testid="stHeader"] {{
-            background: rgba(0,0,0,0.0);
-        }}
-        [data-testid="stToolbar"] {{
-            right: 1rem;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+hero_image_url = "https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg"
 
-# Example HD image (bull / trading)
-set_bg_image("https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg")
-
-# =============================
-# HERO TEXT
-# =============================
 st.markdown(
-    """
-    <div style="text-align:center; padding-top:120px; color:white; text-shadow: 2px 2px 6px rgba(0,0,0,0.7);">
-        <h1 style="font-size:60px;">Build Your System with</h1>
-        <h2 style="font-size:40px;">ALGO TRADE</h2>
+    f"""
+    <style>
+    .hero {{
+        background-image: url("{hero_image_url}");
+        background-size: cover;
+        background-position: center;
+        height: 50vh;  /* top half */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: white;
+        font-family: 'Arial', sans-serif;
+    }}
+    .hero h1 {{
+        font-size: 60px;
+        margin: 0;
+        font-weight: bold;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    }}
+    .hero p {{
+        font-size: 28px;
+        margin: 5px 0 0 0;
+        text-shadow: 1px 1px 6px rgba(0,0,0,0.7);
+    }}
+    .bottom {{
+        background-color: black;
+        padding: 30px;
+        color: white;
+        font-family: 'Arial', sans-serif;
+    }}
+    </style>
+
+    <div class="hero">
+        <h1>Build Your System with</h1>
+        <p><strong>ALGO TRADE</strong></p>
+    </div>
+
+    <div class="bottom">
     </div>
     """,
     unsafe_allow_html=True
 )
-
-# =============================
-# DASHBOARD CONTENT BELOW
-# =============================
-st.title("📊 Trading Dashboard")
-
-# Example dataframe
-df_positions = pd.DataFrame({
-    "Symbol": ["RELIANCE", "TCS"],
-    "Qty": [10, 5],
-    "PnL": [500, 200]
-})
-st.dataframe(df_positions, width='stretch')
-
-
 
 # =============================
 # SESSION INIT
@@ -112,7 +104,7 @@ else:
         df_positions, msg_pos = get_positions()
         if df_positions is not None:
             st.subheader("📊 MTF Positions")
-            st.dataframe(df_positions, use_container_width=True)
+            st.dataframe(df_positions, width='stretch')  # updated
         else:
             st.warning(msg_pos)
 
@@ -123,7 +115,7 @@ else:
         df_orders, msg_ord = get_orders()
         if df_orders is not None:
             st.subheader("🧾 Today's Orders")
-            st.dataframe(df_orders, use_container_width=True)
+            st.dataframe(df_orders, width='stretch')  # updated
         else:
             st.warning(msg_ord)
 
