@@ -19,7 +19,7 @@ st.set_page_config(page_title="ALGO TRADE ™", layout="wide")
 import random
 
 IMAGE_LIST = [
-    "https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg",
+    "https://images.pexels.com/photos/5834234/pexels-photo-5834234.jpeg",
     "https://cdn.pixabay.com/photo/2017/03/30/15/10/stock-2187070_1280.jpg",
     "https://cdn.pixabay.com/photo/2018/05/02/12/42/bitcoin-3368467_1280.jpg",
     "https://cdn.pixabay.com/photo/2017/01/13/01/22/chart-1975056_1280.jpg",
