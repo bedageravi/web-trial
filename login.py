@@ -1,24 +1,24 @@
 import streamlit as st
 import pyotp
 import requests
-import time
 from datetime import datetime, timezone
-from supabase import create_client, Client
+from supabase import create_client
 
 # ------------------------
-# SUPABASE CONFIG
+# STREAMLIT SECRETS
 # ------------------------
-SUPABASE_URL = st.secrets["url"]
-SUPABASE_SERVICE_KEY = st.secrets["anon_key"]
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+ACCESS_TOKEN_SHORT = st.secrets["kotak"]["ACCESS_TOKEN_SHORT"]
+MOBILE = st.secrets["kotak"]["mobile"]
+UCC = st.secrets["kotak"]["ucc"]
+TOTP_SECRET = st.secrets["kotak"]["totp_secret"]
+
+SUPABASE_URL = st.secrets["kotak"]["url"]
+SUPABASE_SERVICE_KEY = st.secrets["kotak"]["anon_key"]
 
 # ------------------------
-# KOTAK CREDENTIALS
+# SUPABASE CLIENT
 # ------------------------
-ACCESS_TOKEN_SHORT = os.getenv("ACCESS_TOKEN_SHORT")
-MOBILE = os.getenv("MOBILE")
-UCC = os.getenv("UCC")
-TOTP_SECRET = os.getenv("TOTP_SECRET")
+supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------------
 # GLOBAL HEADERS
@@ -31,11 +31,13 @@ HEADERS = {
 }
 
 # ------------------------
-# LOGIN FUNCTION
+# KOTAK LOGIN FUNCTION
 # ------------------------
 def kotak_login(mpin_input: str):
-
-    totp = pyotp.TOTP(TOTP_SECRET).now()
+    """Perform Kotak Neo login and save session in Supabase"""
+    
+    totp_secret_clean = TOTP_SECRET.strip().replace(" ", "")
+    totp = pyotp.TOTP(totp_secret_clean).now()
 
     headers = {
         "Authorization": ACCESS_TOKEN_SHORT,
@@ -43,7 +45,7 @@ def kotak_login(mpin_input: str):
         "Content-Type": "application/json"
     }
 
-    # Step 1
+    # Step 1: tradeApiLogin
     try:
         r1 = requests.post(
             "https://mis.kotaksecurities.com/login/1.0/tradeApiLogin",
@@ -60,7 +62,7 @@ def kotak_login(mpin_input: str):
     if not view_token or not view_sid:
         return False, "Step1 failed: Invalid response"
 
-    # Step 2
+    # Step 2: tradeApiValidate
     headers2 = headers.copy()
     headers2["sid"] = view_sid
     headers2["Auth"] = view_token
@@ -83,7 +85,7 @@ def kotak_login(mpin_input: str):
         return False, "Step2 failed: Invalid response"
 
     # ------------------------
-    # SAVE TO SUPABASE
+    # SAVE SESSION TO SUPABASE
     # ------------------------
     record = {
         "auth_token": auth_token,
@@ -104,7 +106,7 @@ def kotak_login(mpin_input: str):
 # LOAD AUTH FROM SUPABASE
 # ------------------------
 def load_auth():
-
+    """Fetch latest session from Supabase"""
     result = (
         supabase
         .table("auth_sessions")
@@ -126,7 +128,6 @@ def load_auth():
 # STREAMLIT LOGIN PAGE
 # ------------------------
 def login_page():
-
     st.subheader("🔐 Kotak Neo Login")
 
     mpin = st.text_input("Enter MPIN", type="password")
@@ -146,7 +147,7 @@ def login_page():
             if success:
                 st.session_state.logged_in = True
 
-    # Messages
+    # Show messages
     if st.session_state.login_success:
         st.success(st.session_state.login_msg)
     elif st.session_state.login_msg:
