@@ -56,7 +56,7 @@ if "bg_image" not in st.session_state:
 st.markdown(
     f"""
     <div style="display:flex; justify-content:center; padding-top:20px;">
-        <img src="{st.session_state.bg_image}" style="width:500px; height:500px;" />
+        <img src="{st.session_state.bg_image}" style="width:700px; height:700px;" />
     </div>
     """,
     unsafe_allow_html=True
