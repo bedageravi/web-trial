@@ -1,12 +1,12 @@
 import streamlit as st
+import pandas as pd
 from streamlit_autorefresh import st_autorefresh
 from login import login_page, load_auth
 from positions import get_positions
 from orders import get_orders
-import pandas as pd
 
 # =============================
-# AUTO-REFRESH EVERY 1 MINUTE
+# AUTO-REFRESH
 # =============================
 count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
@@ -16,51 +16,50 @@ count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 st.set_page_config(page_title="Algo Trade", layout="wide")
 
 # =============================
-# HERO IMAGE TOP + BLACK BACKGROUND BOTTOM
+# BACKGROUND: BLACK + TOP IMAGE HERO
 # =============================
 hero_image_url = "https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg"
 
 st.markdown(
     f"""
     <style>
-    .hero {{
+    /* ENTIRE PAGE BLACK BACKGROUND */
+    [data-testid="stAppViewContainer"] {{
+        background-color: black;
+    }}
+    [data-testid="stHeader"], [data-testid="stToolbar"] {{
+        background: rgba(0,0,0,0.0);
+    }}
+
+    /* TOP HERO IMAGE */
+    .top-hero {{
         background-image: url("{hero_image_url}");
         background-size: cover;
         background-position: center;
-        height: 50vh;  /* top half */
+        height: 50vh;
         display: flex;
-        flex-direction: column;
         justify-content: center;
         align-items: center;
-        text-align: center;
         color: white;
-        font-family: 'Arial', sans-serif;
-    }}
-    .hero h1 {{
-        font-size: 60px;
-        margin: 0;
-        font-weight: bold;
+        text-align: center;
+        font-family: Arial, sans-serif;
         text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
     }}
-    .hero p {{
-        font-size: 28px;
-        margin: 5px 0 0 0;
-        text-shadow: 1px 1px 6px rgba(0,0,0,0.7);
+    .top-hero h1 {{
+        font-size: 60px;
+        margin: 0;
     }}
-    .bottom {{
-        background-color: black;
-        padding: 30px;
-        color: white;
-        font-family: 'Arial', sans-serif;
+    .top-hero p {{
+        font-size: 36px;
+        margin: 5px 0 0 0;
     }}
     </style>
 
-    <div class="hero">
-        <h1>Build Your System with</h1>
-        <p><strong>ALGO TRADE</strong></p>
-    </div>
-
-    <div class="bottom">
+    <div class="top-hero">
+        <div>
+            <h1>Build Your System with</h1>
+            <p><strong>ALGO TRADE</strong></p>
+        </div>
     </div>
     """,
     unsafe_allow_html=True
