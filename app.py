@@ -7,9 +7,9 @@ import pandas as pd
 import random
 
 # =============================
-# AUTO REFRESH
+# AUTO REFRESH (1 minute)
 # =============================
-st_autorefresh(interval=60_000, limit=None, key="auto_refresh")
+st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
 # =============================
 # PAGE CONFIG
@@ -115,22 +115,10 @@ else:
             col2.markdown(f'<h4 style="color:white; font-weight:bold;">Overall Return %: {summary["total_pct"]}</h4>', unsafe_allow_html=True)
 
             # -------------------------
-            # COLOR FORMATTING
+            # TABLE STYLING (ALL BLACK)
             # -------------------------
-            def color_pnl(val):
-                if val > 0:
-                    return 'color: green; font-weight:bold'
-                elif val < 0:
-                    return 'color: red; font-weight:bold'
-                else:
-                    return 'color: white'
+            styled_df = df_positions.style.map(lambda x: 'color: black', subset=df_positions.columns)
 
-            # Symbol column black, numeric columns black, P&L colored
-            styled_df = df_positions.style.applymap(color_pnl, subset=["P&L (₹)", "% Return"]) \
-                                           .applymap(lambda x: 'color: black', subset=["Symbol"]) \
-                                           .applymap(lambda x: 'color: black', subset=["Qty","AvgPrice","LTP"])
-
-            # Display table with auto height, only actual rows
             st.dataframe(styled_df, width='stretch', height='auto')
 
         else:
@@ -143,12 +131,19 @@ else:
         df_orders, msg_ord = get_orders()
         if df_orders is not None and not df_orders.empty:
             st.markdown('<h3 style="color:white; font-weight:bold;">🧾 Today\'s Orders</h3>', unsafe_allow_html=True)
-            st.dataframe(df_orders, width='stretch', height='auto')
+
+            # All table text black
+            styled_orders = df_orders.style.map(lambda x: 'color: black', subset=df_orders.columns)
+
+            st.dataframe(styled_orders, width='stretch', height='auto')
         else:
             st.warning(msg_ord)
 
     st.divider()
 
+    # -------------------------
+    # LOGOUT
+    # -------------------------
     if st.button("Logout"):
         st.session_state.logged_in = False
         st.success("Logged out successfully!")
