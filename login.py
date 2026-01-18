@@ -1,41 +1,37 @@
 import streamlit as st
 import pyotp
 import requests
-from supabase import create_client, Client
 import time
+from supabase import create_client, Client
 
-# =========================
-# HARD-CODED SUPABASE CONFIG
-# =========================
+# ------------------------
+# SUPABASE CONFIG
+# ------------------------
 SUPABASE_URL = "https://kyaqnoyrwyrekygfarey.supabase.co"
-SUPABASE_KEY = "sb_secret_WX_R_MMSvmU_-NQgsARXmw_v-l7EKNM"
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+SUPABASE_SERVICE_KEY = "sb_secret_WX_R_MMSvmU_-NQgsARXmw_v-l7EKNM"
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
-# =========================
-# HARD-CODED KOTAK SECRETS
-# =========================
+# ------------------------
+# KOTAK CREDENTIALS (HARDCODE)
+# ------------------------
 ACCESS_TOKEN_SHORT = "your-access-token"
 MOBILE = "+91xxxxxxxxxx"
 UCC = "XXTBL"
 TOTP_SECRET = "your-totp-secret"
 
-# =========================
+# ------------------------
 # GLOBAL HEADERS
-# =========================
+# ------------------------
 HEADERS = {"Auth": None, "Sid": None, "neo-fin-key": "neotradeapi", "accept": "application/json"}
 
-# =========================
+# ------------------------
 # LOGIN FUNCTION
-# =========================
+# ------------------------
 def kotak_login(mpin_input: str, user_id="default_user"):
     totp = pyotp.TOTP(TOTP_SECRET).now()
-    headers = {
-        "Authorization": ACCESS_TOKEN_SHORT,
-        "neo-fin-key": "neotradeapi",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": ACCESS_TOKEN_SHORT, "neo-fin-key": "neotradeapi", "Content-Type": "application/json"}
 
-    # Step 1: login
+    # Step1: login
     try:
         r1 = requests.post(
             "https://mis.kotaksecurities.com/login/1.0/tradeApiLogin",
@@ -52,7 +48,7 @@ def kotak_login(mpin_input: str, user_id="default_user"):
     if not view_token or not view_sid:
         return False, "Step1 failed: Invalid response"
 
-    # Step 2: validate MPIN
+    # Step2: validate MPIN
     headers2 = headers.copy()
     headers2["sid"] = view_sid
     headers2["Auth"] = view_token
@@ -74,10 +70,10 @@ def kotak_login(mpin_input: str, user_id="default_user"):
     if not auth_token or not auth_sid:
         return False, "Step2 failed: Invalid response"
 
-    # =========================
+    # ------------------------
     # SAVE TOKEN TO SUPABASE
-    # =========================
-    expires_at = int(time.time()) + 6*3600  # 6 hours
+    # ------------------------
+    expires_at = int(time.time()) + 6*3600  # 6 hours token validity
     record = {
         "user_id": user_id,
         "auth_token": auth_token,
@@ -86,7 +82,7 @@ def kotak_login(mpin_input: str, user_id="default_user"):
         "expires_at": expires_at
     }
 
-    # Upsert token (insert or update existing)
+    # Upsert into auth_tokens table
     supabase.table("auth_tokens").upsert(record, on_conflict="user_id").execute()
 
     # Update global HEADERS
@@ -95,9 +91,9 @@ def kotak_login(mpin_input: str, user_id="default_user"):
 
     return True, "Kotak login successful ✅"
 
-# =========================
+# ------------------------
 # LOAD AUTH FUNCTION
-# =========================
+# ------------------------
 def load_auth(user_id="default_user"):
     result = supabase.table("auth_tokens").select("*").eq("user_id", user_id).execute()
     data = result.data
@@ -109,9 +105,9 @@ def load_auth(user_id="default_user"):
             return record
     return None
 
-# =========================
+# ------------------------
 # STREAMLIT LOGIN PAGE
-# =========================
+# ------------------------
 def login_page():
     st.subheader("🔐 Kotak Neo Login")
     mpin = st.text_input("Enter MPIN", type="password")
