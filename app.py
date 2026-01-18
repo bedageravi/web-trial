@@ -35,6 +35,9 @@ div.stButton > button:first-child {
     height: 40px;
     width: 180px;
 }
+h1, h2, h3, h4, h5 {
+    color: white;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -102,30 +105,27 @@ else:
         if isinstance(result, tuple) and isinstance(result[0], pd.DataFrame):
             df_positions, summary = result
 
-            st.subheader("📊 MTF Positions")
+            st.markdown('<h3>📊 MTF Positions</h3>', unsafe_allow_html=True)
 
             # Overall P&L metrics
             col1, col2 = st.columns(2)
-            col1.metric("Overall P&L (₹)", summary["total_pnl"])
-            col2.metric("Overall Return %", summary["total_pct"])
+            col1.markdown(f'<h4>Overall P&L (₹): {summary["total_pnl"]}</h4>', unsafe_allow_html=True)
+            col2.markdown(f'<h4>Overall Return %: {summary["total_pct"]}</h4>', unsafe_allow_html=True)
 
             # -------------------------
             # COLOR FORMATTING
             # -------------------------
             def color_pnl(val):
                 if val > 0:
-                    color = 'green'
+                    return 'color: green; font-weight:bold'
                 elif val < 0:
-                    color = 'red'
+                    return 'color: red; font-weight:bold'
                 else:
-                    color = 'white'
-                return f'color: {color}; font-weight:bold'
+                    return 'color: black'
 
-            def color_name(val):
-                return 'color: white; font-weight:bold'
-
+            # Only style the relevant columns
             styled_df = df_positions.style.applymap(color_pnl, subset=["P&L (₹)", "% Return"]) \
-                                           .applymap(color_name, subset=["Symbol"])
+                                           .applymap(lambda x: 'color: black', subset=["Symbol","Qty","AvgPrice","LTP"])
 
             st.dataframe(styled_df, width='stretch', height=400)
 
@@ -137,8 +137,8 @@ else:
     # -------------------------
     with st.spinner("Fetching Orders..."):
         df_orders, msg_ord = get_orders()
-        if df_orders is not None:
-            st.subheader("🧾 Today's Orders")
+        if df_orders is not None and not df_orders.empty:
+            st.markdown('<h3>🧾 Today\'s Orders</h3>', unsafe_allow_html=True)
             st.dataframe(df_orders, width='stretch', height=300)
         else:
             st.warning(msg_ord)
