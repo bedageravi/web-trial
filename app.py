@@ -1,77 +1,50 @@
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
-from login import login_page, load_auth
-from positions import get_positions
-from orders import get_orders
 import pandas as pd
 
 # =============================
-# AUTO-REFRESH EVERY 1 MINUTE
+# AUTO-REFRESH
 # =============================
-count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
+st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
 # =============================
 # PAGE CONFIG
 # =============================
-st.set_page_config(page_title="Algo Trade ™", layout="wide")
+st.set_page_config(page_title="ALGO TRADE ™", layout="wide")
 
 # =============================
-# SET FULL SOLID PURPLE BACKGROUND
-# =============================
-def set_bg_color():
-    st.markdown(
-        """
-        <style>
-        /* Full page solid purple background */
-        [data-testid="stAppViewContainer"] {
-            background-color: #5D3FD3;  /* Solid purple */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-        [data-testid="stHeader"] {
-            background: rgba(0,0,0,0.0);
-        }
-        [data-testid="stToolbar"] {
-            right: 1rem;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-set_bg_color()
-
-# =============================
-# TRADEMARK HEADER (LOGO + NAME)
+# COLOR FLOW / GRADIENT BACKGROUND
 # =============================
 st.markdown(
     """
     <style>
-    .header-logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 20px;
-        background-color: rgba(0,0,0,0.2);
-        border-radius: 10px;
-        width: fit-content;
-        margin-bottom: 20px;
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(135deg, #6a0dad, #8A2BE2, #4B0082);
+        background-size: 400% 400%;
+        animation: gradientFlow 15s ease infinite;
     }
-    .header-logo img {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
+
+    @keyframes gradientFlow {
+        0% {background-position: 0% 50%;}
+        50% {background-position: 100% 50%;}
+        100% {background-position: 0% 50%;}
     }
-    .header-logo h2 {
-        color: white;
-        margin: 0;
-        font-family: 'Arial', sans-serif;
-    }
+
+    [data-testid="stHeader"] {background: rgba(0,0,0,0);}
+    [data-testid="stToolbar"] {right: 1rem;}
     </style>
-    <div class="header-logo">
-        <img src="https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg" />
-        <h2>ALGO TRADE ™</h2>
+    """,
+    unsafe_allow_html=True
+)
+
+# =============================
+# TRADEMARK HEADER
+# =============================
+st.markdown(
+    """
+    <div style="display:flex; align-items:center; gap:15px; padding:10px 20px;">
+        <img src="https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg" width="50" height="50" style="border-radius:50%;">
+        <h2 style="color:white; margin:0; font-family:'Arial',sans-serif;">ALGO TRADE ™</h2>
     </div>
     """,
     unsafe_allow_html=True
@@ -82,7 +55,8 @@ st.markdown(
 # =============================
 st.markdown(
     """
-    <div style="text-align:center; padding-top:20px; padding-bottom:40px; color:white; text-shadow: 2px 2px 6px rgba(0,0,0,0.7);">
+    <div style="text-align:center; padding-top:20px; padding-bottom:40px; 
+                color:white; text-shadow:2px 2px 8px rgba(0,0,0,0.7);">
         <h1 style="font-size:60px; margin-bottom:0;">Build Your System with</h1>
         <h2 style="font-size:40px;">ALGO TRADE ™</h2>
     </div>
@@ -91,21 +65,23 @@ st.markdown(
 )
 
 # =============================
-# SESSION INIT
+# SAMPLE DATA
 # =============================
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "manual_refresh" not in st.session_state:
-    st.session_state.manual_refresh = 0
+df_positions = pd.DataFrame({
+    "Symbol": ["RELIANCE", "TCS", "INFY"],
+    "Qty": [10, 5, 8],
+    "PnL": [500, -200, 350]
+})
+
+df_orders = pd.DataFrame({
+    "OrderID": [101, 102, 103],
+    "Symbol": ["RELIANCE", "TCS", "INFY"],
+    "Qty": [10, 5, 8],
+    "Status": ["Filled", "Pending", "Cancelled"]
+})
 
 # =============================
-# CHECK AUTH
-# =============================
-auth_data = load_auth()
-st.session_state.logged_in = auth_data is not None
-
-# =============================
-# GLASS CARD FUNCTION FOR TABLES
+# GLASSMORPHIC TABLE FUNCTION
 # =============================
 def glass_card(title, df):
     st.markdown(
@@ -129,44 +105,10 @@ def glass_card(title, df):
     st.dataframe(df, use_container_width=True)
 
 # =============================
-# LOGIN OR DASHBOARD FLOW
+# DISPLAY TABLES
 # =============================
-if not st.session_state.logged_in:
-    login_page()
-else:
-    st.success("✅ Logged in. Fetching data...")
-
-    # -------------------------
-    # MANUAL REFRESH BUTTON
-    # -------------------------
-    if st.button("🔄 Refresh Dashboard"):
-        st.session_state.manual_refresh += 1  # triggers rerun automatically
-
-    # -------------------------
-    # FETCH POSITIONS
-    # -------------------------
-    with st.spinner("Fetching Positions..."):
-        df_positions, msg_pos = get_positions()
-        if df_positions is not None:
-            glass_card("📊 MTF Positions", df_positions)
-        else:
-            st.warning(msg_pos)
-
-    # -------------------------
-    # FETCH ORDERS
-    # -------------------------
-    with st.spinner("Fetching Orders..."):
-        df_orders, msg_ord = get_orders()
-        if df_orders is not None:
-            glass_card("🧾 Today's Orders", df_orders)
-        else:
-            st.warning(msg_ord)
-
-    st.divider()
-
-    # -------------------------
-    # LOGOUT BUTTON
-    # -------------------------
-    if st.button("Logout"):
-        st.session_state.logged_in = False
-        st.success("Logged out successfully!")
+col1, col2 = st.columns(2)
+with col1:
+    glass_card("📊 MTF Positions", df_positions)
+with col2:
+    glass_card("🧾 Today's Orders", df_orders)
