@@ -57,12 +57,12 @@ selected_image = random.choice(IMAGE_LIST)
 st.markdown(
     f"""
     <div style="display:flex; justify-content:center; padding-top:20px;">
-        <img src="{selected_image}" width="150" />
-
+        <img src="{selected_image}" style="width:120px; height:auto;" />
     </div>
     """,
     unsafe_allow_html=True
 )
+
 
 # =============================
 # HERO TEXT
