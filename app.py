@@ -10,23 +10,14 @@ import base64
 # =============================
 count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
+# =============================
+# PAGE CONFIG
+# =============================
 st.set_page_config(page_title="Trading Web App", layout="wide")
 
-set_black_background()   # 👈 PUT THIS LINE HERE
-
-st.title("📈 Trading Web App")
-
-# -----------------------------
-# SESSION INIT
-# -----------------------------
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "manual_refresh" not in st.session_state:
-    st.session_state.manual_refresh = 0
-
-# -----------------------------
-# BACKGROUND IMAGE
-# -----------------------------
+# =============================
+# BLACK BACKGROUND FUNCTION
+# =============================
 def set_black_background():
     st.markdown(
         """
@@ -39,24 +30,36 @@ def set_black_background():
         unsafe_allow_html=True
     )
 
+# =============================
+# APPLY BLACK BACKGROUND
+# =============================
+set_black_background()
 
-# Example with an online hosted image (WORKING)
-set_bg_image_url("https://pixabay.com/get/g8e1063b9866f45780c5ea65614c1ae38a0340ca119983652950fc80a47a6045d4fbf3151448d538003e959b68b3ea19e1b2e8f071b1ebe7c0da149b2768f5a6c_1280.jpg")
+# =============================
+# APP TITLE
+# =============================
+st.title("📈 Trading Web App")
 
+# =============================
+# SESSION INIT
+# =============================
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "manual_refresh" not in st.session_state:
+    st.session_state.manual_refresh = 0
 
-
-# -----------------------------
+# =============================
 # CHECK TOKEN
-# -----------------------------
+# =============================
 auth_data = load_auth()
 if auth_data is None:
     st.session_state.logged_in = False
 else:
     st.session_state.logged_in = True
 
-# -----------------------------
+# =============================
 # LOGIN OR DASHBOARD FLOW
-# -----------------------------
+# =============================
 if not st.session_state.logged_in:
     login_page()
 else:
