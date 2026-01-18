@@ -57,7 +57,8 @@ selected_image = random.choice(IMAGE_LIST)
 st.markdown(
     f"""
     <div style="display:flex; justify-content:center; padding-top:20px;">
-        <img src="{selected_image}" width="180" />
+        <img src="{selected_image}" width="150" />
+
     </div>
     """,
     unsafe_allow_html=True
