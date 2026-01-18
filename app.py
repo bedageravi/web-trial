@@ -43,6 +43,15 @@ h1, h2, h3, h4, h5 {
 """, unsafe_allow_html=True)
 
 # =============================
+# HERO TEXT ABOVE IMAGE
+# =============================
+st.markdown("""
+<div style="text-align:center; color:white; padding-bottom:10px;">
+    <h1 style="font-size:42px;">Build Your Automated Trading System</h1>
+</div>
+""", unsafe_allow_html=True)
+
+# =============================
 # RANDOM HERO IMAGE
 # =============================
 IMAGE_LIST = [
@@ -55,19 +64,18 @@ if "bg_image" not in st.session_state:
 
 st.markdown(
     f"""
-    <div style="display:flex; justify-content:center; padding-top:20px;">
-        <img src="{st.session_state.bg_image}" style="width:700px; height:700px;" />
+    <div style="display:flex; justify-content:center; padding-top:10px; padding-bottom:10px;">
+        <img src="{st.session_state.bg_image}" style="width:500px; height:500px;" />
     </div>
     """,
     unsafe_allow_html=True
 )
 
 # =============================
-# HERO TEXT
+# SUBHEADING BELOW IMAGE
 # =============================
 st.markdown("""
-<div style="text-align:center; color:white; padding-top:10px; padding-bottom:25px;">
-    <h1 style="font-size:42px;">Build Your Automated Trading System</h1>
+<div style="text-align:center; color:white; padding-top:5px; padding-bottom:25px;">
     <h2 style="font-size:30px;">KOTAK ALGO TRADE ™</h2>
 </div>
 """, unsafe_allow_html=True)
