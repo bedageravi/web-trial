@@ -4,4 +4,4 @@ pyotp
 pandas
 streamlit-autorefresh
 supabase
-yfinance
+git+https://github.com/rongardF/tvdatafeed.git
