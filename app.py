@@ -12,59 +12,49 @@ count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
 import streamlit as st
 
-st.title("📈 Trading Web App")
+# =============================
+# PAGE CONFIG
+# =============================
+st.set_page_config(page_title="Algo Trade", layout="wide")
 
-st.markdown("### Watch Live Candlestick/Bull Video:")
+# =============================
+# HERO IMAGE URL
+# =============================
+hero_image_url = "https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg"  # example HD bull image
 
-# Put video **in front**, Streamlit component style
-VIDEO_URL = "https://cdn.pixabay.com/video/2020/01/14/31251-385265625_large.mp4"
-st.video(VIDEO_URL, start_time=0)
-
-
+# =============================
+# HERO SECTION WITH IMAGE + TEXT
+# =============================
 st.markdown(
     f"""
     <style>
-    .video-bg {{
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1;
-    }}
-    .overlay {{
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-        z-index: -1;
-    }}
-    .hero-text {{
-        position: relative;
+    .hero {{
+        background-image: url("{hero_image_url}");
+        background-size: cover;
+        background-position: center;
+        height: 450px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         text-align: center;
         color: white;
-        padding-top: 120px;
         font-family: 'Arial', sans-serif;
     }}
-    .hero-text h1 {{
-        font-size: 64px;
+    .hero h1 {{
+        font-size: 60px;
+        margin: 0;
         font-weight: bold;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
     }}
-    .hero-text p {{
-        font-size: 32px;
+    .hero p {{
+        font-size: 28px;
+        margin: 5px 0 0 0;
+        text-shadow: 1px 1px 6px rgba(0,0,0,0.7);
     }}
     </style>
 
-    <video autoplay muted loop class="video-bg">
-        <source src="{VIDEO_URL}" type="video/mp4">
-    </video>
-
-    <div class="overlay"></div>
-
-    <div class="hero-text">
+    <div class="hero">
         <h1>Build Your System with</h1>
         <p><strong>ALGO TRADE</strong></p>
     </div>
@@ -72,12 +62,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# =====================
-# Your app content below
-# =====================
-
-st.title("📈 Trading Web App")
-st.write("Your dashboard content starts here...")
+# =============================
+# TRADING DASHBOARD CONTENT BELOW
+# =============================
+st.title("📊 Trading Dashboard")
+st.write("Your positions, orders and other content go here...")
 
 
 
