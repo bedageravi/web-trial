@@ -48,7 +48,7 @@ h1, h2, h3, h4, h5 {
 st.markdown("""
 <div style="text-align:center; color:white; padding-bottom:5px;">
     <h1 style="font-size:38px;">Build Your Emotional Discipline</h1>
-    <h3 style="font-size:24px;">With Our Automated Trading System</h3>
+    <h3 style="font-size:30px;">With Our Automated Trading System</h3>
 </div>
 """, unsafe_allow_html=True)
 
