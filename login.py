@@ -1,37 +1,33 @@
-import json
+import streamlit as st
 import pyotp
 import requests
-import streamlit as st
-from pathlib import Path
+from supabase import create_client, Client
 import time
 
 # =========================
-# AUTH FILE
+# SUPABASE CONFIG (SIMPLE)
 # =========================
-AUTH_FILE = Path("auth.json")
+SUPABASE_URL = st.secrets["url"]          # your supabase URL
+SUPABASE_KEY = st.secrets["anon_key"]     # your supabase service key or anon key
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # =========================
-# LOAD SECRETS
+# KOTAK SECRETS
 # =========================
-ACCESS_TOKEN_SHORT = st.secrets["kotak"]["access_token"]
-MOBILE = st.secrets["kotak"]["mobile"]
-UCC = st.secrets["kotak"]["ucc"]
-TOTP_SECRET = st.secrets["kotak"]["totp_secret"]
+ACCESS_TOKEN_SHORT = st.secrets["kotak_access_token"]
+MOBILE = st.secrets["kotak_mobile"]
+UCC = st.secrets["kotak_ucc"]
+TOTP_SECRET = st.secrets["kotak_totp_secret"]
 
 # =========================
-# HEADERS
+# GLOBAL HEADERS
 # =========================
-HEADERS = {
-    "Auth": None,
-    "Sid": None,
-    "neo-fin-key": "neotradeapi",
-    "accept": "application/json"
-}
+HEADERS = {"Auth": None, "Sid": None, "neo-fin-key": "neotradeapi", "accept": "application/json"}
 
 # =========================
-# KOTAK LOGIN FUNCTION
+# LOGIN FUNCTION
 # =========================
-def kotak_login(mpin_input: str):
+def kotak_login(mpin_input: str, user_id="default_user"):
     totp = pyotp.TOTP(TOTP_SECRET).now()
     headers = {
         "Authorization": ACCESS_TOKEN_SHORT,
@@ -39,6 +35,7 @@ def kotak_login(mpin_input: str):
         "Content-Type": "application/json"
     }
 
+    # Step 1: login
     try:
         r1 = requests.post(
             "https://mis.kotaksecurities.com/login/1.0/tradeApiLogin",
@@ -55,6 +52,7 @@ def kotak_login(mpin_input: str):
     if not view_token or not view_sid:
         return False, "Step1 failed: Invalid response"
 
+    # Step 2: validate MPIN
     headers2 = headers.copy()
     headers2["sid"] = view_sid
     headers2["Auth"] = view_token
@@ -76,20 +74,40 @@ def kotak_login(mpin_input: str):
     if not auth_token or not auth_sid:
         return False, "Step2 failed: Invalid response"
 
-    # Save token with expiry (5 min example)
-    AUTH_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(AUTH_FILE, "w") as f:
-        json.dump({
-            "AUTH_TOKEN": auth_token,
-            "AUTH_SID": auth_sid,
-            "BASE_URL": base_url,
-            "EXPIRES_AT": time.time() + 5*60  # 5 minutes token validity
-        }, f, indent=2)
+    # =========================
+    # SAVE TOKEN TO SUPABASE
+    # =========================
+    expires_at = int(time.time()) + 6*3600  # 6 hours
+    record = {
+        "user_id": user_id,
+        "auth_token": auth_token,
+        "sid": auth_sid,
+        "base_url": base_url,
+        "expires_at": expires_at
+    }
 
+    # Upsert token (insert or update existing)
+    supabase.table("auth_tokens").upsert(record, on_conflict="user_id").execute()
+
+    # Update global HEADERS
     HEADERS["Auth"] = auth_token
     HEADERS["Sid"] = auth_sid
 
     return True, "Kotak login successful ✅"
+
+# =========================
+# LOAD AUTH FUNCTION
+# =========================
+def load_auth(user_id="default_user"):
+    result = supabase.table("auth_tokens").select("*").eq("user_id", user_id).execute()
+    data = result.data
+    if data:
+        record = data[0]
+        if record["expires_at"] > int(time.time()):
+            HEADERS["Auth"] = record["auth_token"]
+            HEADERS["Sid"] = record["sid"]
+            return record
+    return None
 
 # =========================
 # STREAMLIT LOGIN PAGE
@@ -118,17 +136,3 @@ def login_page():
         st.success(st.session_state.login_msg)
     elif st.session_state.login_msg:
         st.error(st.session_state.login_msg)
-
-# =========================
-# LOAD AUTH FOR POSITIONS / ORDERS
-# =========================
-def load_auth():
-    if AUTH_FILE.exists():
-        with open(AUTH_FILE, "r") as f:
-            data = json.load(f)
-        # Check token expiry
-        if data.get("EXPIRES_AT", 0) > time.time():
-            HEADERS["Auth"] = data["AUTH_TOKEN"]
-            HEADERS["Sid"] = data["AUTH_SID"]
-            return data
-    return None
