@@ -61,7 +61,7 @@ set_bg_color()
 st.markdown(
     """
     <div style="text-align:center; padding-bottom:20px;">
-        <img src="https://images.pexels.com/photos/30268012/pexels-photo-30268012.jpeg" 
+        <img src="https://images.pexels.com/photos/29611783/pexels-photo-29611783.jpeg" 
              style="width:80%; max-height:400px; border-radius:15px; object-fit:cover;"/>
     </div>
     """,
