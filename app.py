@@ -7,7 +7,7 @@ import pandas as pd
 import random
 
 # =============================
-# AUTO REFRESH
+# AUTO REFRESH (60 seconds)
 # =============================
 st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
@@ -17,18 +17,16 @@ st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 st.set_page_config(page_title="ALGO TRADE ™", layout="wide")
 
 # =============================
-# BACKGROUND
+# BACKGROUND STYLE
 # =============================
 st.markdown("""
 <style>
 [data-testid="stAppViewContainer"] {
     background: linear-gradient(180deg, #2b2b2b, #000000);
 }
-
 [data-testid="stHeader"] {
     background: rgba(0,0,0,0.0);
 }
-
 div.stButton > button:first-child {
     background-color: white;
     color: black;
@@ -41,28 +39,24 @@ div.stButton > button:first-child {
 """, unsafe_allow_html=True)
 
 # =============================
-# IMAGE LIST
+# RANDOM HERO IMAGE
 # =============================
 IMAGE_LIST = [
     "https://images.pexels.com/photos/6770775/pexels-photo-6770775.jpeg",
     "https://wallpapercave.com/wp/wp9587572.jpg",
     "https://images.pexels.com/photos/5834234/pexels-photo-5834234.jpeg"
 ]
+if "bg_image" not in st.session_state:
+    st.session_state.bg_image = random.choice(IMAGE_LIST)
 
-selected_image = random.choice(IMAGE_LIST)
-
-# =============================
-# CENTERED IMAGE (PERFECT)
-# =============================
 st.markdown(
     f"""
     <div style="display:flex; justify-content:center; padding-top:20px;">
-        <img src="{selected_image}" style="width:500px; height:500px;" />
+        <img src="{st.session_state.bg_image}" style="width:500px; height:500px;" />
     </div>
     """,
     unsafe_allow_html=True
 )
-
 
 # =============================
 # HERO TEXT
@@ -100,24 +94,23 @@ else:
         st.session_state.manual_refresh += 1
 
     # -------------------------
-    # POSITIONS
+    # POSITIONS (WITH LTP + P&L)
     # -------------------------
     with st.spinner("Fetching Positions..."):
-    result = get_positions()
+        result = get_positions()
 
-    if isinstance(result, tuple) and isinstance(result[0], pd.DataFrame):
-        df_positions, summary = result
+        if isinstance(result, tuple) and isinstance(result[0], pd.DataFrame):
+            df_positions, summary = result
 
-        st.subheader("📊 MTF Positions")
+            st.subheader("📊 MTF Positions")
 
-        col1, col2 = st.columns(2)
-        col1.metric("Overall P&L (₹)", summary["total_pnl"])
-        col2.metric("Overall Return %", summary["total_pct"])
+            col1, col2 = st.columns(2)
+            col1.metric("Overall P&L (₹)", summary["total_pnl"])
+            col2.metric("Overall Return %", summary["total_pct"])
 
-        st.dataframe(df_positions, use_container_width=True)
-    else:
-        st.warning(result[1] if result else "No positions found")
-
+            st.dataframe(df_positions, use_container_width=True)
+        else:
+            st.warning(result[1] if result else "No positions found")
 
     # -------------------------
     # ORDERS
