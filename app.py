@@ -7,7 +7,7 @@ import pandas as pd
 import random
 
 # =============================
-# AUTO REFRESH (60 sec)
+# AUTO REFRESH
 # =============================
 st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
@@ -109,8 +109,26 @@ else:
             col1.metric("Overall P&L (₹)", summary["total_pnl"])
             col2.metric("Overall Return %", summary["total_pct"])
 
-            # Positions table
-            st.dataframe(df_positions, width='stretch')
+            # -------------------------
+            # COLOR FORMATTING
+            # -------------------------
+            def color_pnl(val):
+                if val > 0:
+                    color = 'green'
+                elif val < 0:
+                    color = 'red'
+                else:
+                    color = 'white'
+                return f'color: {color}; font-weight:bold'
+
+            def color_name(val):
+                return 'color: white; font-weight:bold'
+
+            styled_df = df_positions.style.applymap(color_pnl, subset=["P&L (₹)", "% Return"]) \
+                                           .applymap(color_name, subset=["Symbol"])
+
+            st.dataframe(styled_df, width='stretch', height=400)
+
         else:
             st.warning(result[1] if result else "No positions found")
 
@@ -121,7 +139,7 @@ else:
         df_orders, msg_ord = get_orders()
         if df_orders is not None:
             st.subheader("🧾 Today's Orders")
-            st.dataframe(df_orders, width='stretch')
+            st.dataframe(df_orders, width='stretch', height=300)
         else:
             st.warning(msg_ord)
 
