@@ -15,10 +15,10 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 # ------------------------
 # KOTAK CREDENTIALS
 # ------------------------
-ACCESS_TOKEN_SHORT = "your-access-token"
-MOBILE = "+91xxxxxxxxxx"
+ACCESS_TOKEN_SHORT = "ce5191a8-b2d3-44ff-bc3c-65970498e2f0"
+MOBILE = "+919766728415"
 UCC = "XXTBL"
-TOTP_SECRET = "your-totp-secret"
+TOTP_SECRET = "OBEESAYVC2V3IA5YYHCN6EB7UI"
 
 # ------------------------
 # GLOBAL HEADERS
