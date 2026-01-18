@@ -1,7 +1,7 @@
 # -------------------- positions.py --------------------
 import pandas as pd
 import requests
-from login import load_auth, supabase  # Supabase client & login
+from login import load_auth, supabase
 from datetime import datetime, timezone
 
 HEADERS = {
@@ -14,16 +14,17 @@ HEADERS = {
 # -------------------- Fetch Positions --------------------
 def get_positions():
     """
-    Fetch Kotak MTF positions and return DataFrame.
+    Fetch Kotak MTF positions and return DataFrame + summary
     Columns: Symbol, Qty, AvgPrice, LTP, P&L (₹), % Return, Status, ExitPrice
+    summary: dict(total_pnl, total_pct)
     """
     auth_data = load_auth()
     if not auth_data:
-        return None, "Auth token not found. Please login first."
+        return None, ("Auth token not found. Please login first",)
 
     base_url = auth_data.get("base_url")
     if not base_url:
-        return None, "BASE_URL missing. Please login again."
+        return None, ("BASE_URL missing. Please login again",)
 
     HEADERS["Auth"] = auth_data.get("auth_token")
     HEADERS["Sid"] = auth_data.get("auth_sid")
@@ -32,7 +33,7 @@ def get_positions():
         r = requests.get(f"{base_url}/quick/user/positions", headers=HEADERS, timeout=10)
         data = r.json().get("data", [])
     except Exception as e:
-        return None, f"Error fetching positions: {e}"
+        return None, (f"Error fetching positions: {e}",)
 
     mtf_positions = []
     for p in data:
@@ -47,94 +48,61 @@ def get_positions():
         })
 
     if not mtf_positions:
-        return None, "No MTF positions found"
+        return None, ("No MTF positions found",)
 
     df_positions = pd.DataFrame(mtf_positions)
-    return df_positions, "Positions fetched successfully"
 
+    # -------------------- Simulate LTP (replace with live LTP later) --------------------
+    ltp_data = {row["Symbol"]: row["AvgPrice"]*1.02 for _, row in df_positions.iterrows()}  # example +2%
 
-# -------------------- Update LTP and P&L --------------------
-def update_positions_ltp(df_positions, ltp_data, last_snapshot={}):
-    """
-    ltp_data: dict {symbol: latest_price}
-    last_snapshot: dict {symbol: last_qty} to detect exits
-    """
     df_positions["LTP"] = df_positions["Symbol"].map(lambda x: ltp_data.get(x, 0))
-    df_positions["P&L (₹)"] = 0.0
-    df_positions["% Return"] = 0.0
+    df_positions["P&L (₹)"] = round((df_positions["LTP"] - df_positions["AvgPrice"]) * df_positions["Qty"], 2)
+    df_positions["% Return"] = round(((df_positions["LTP"] - df_positions["AvgPrice"]) / df_positions["AvgPrice"])*100, 2)
     df_positions["Status"] = "RUN"
     df_positions["ExitPrice"] = None
 
+    # -------------------- Detect Exit --------------------
     exit_records = []
+    if "last_snapshot" not in globals():
+        globals()["last_snapshot"] = {row["Symbol"]: row["Qty"] for _, row in df_positions.iterrows()}
 
     for idx, row in df_positions.iterrows():
         sym = row["Symbol"]
         qty = row["Qty"]
         avg_price = row["AvgPrice"]
         ltp = row["LTP"]
+        last_qty = globals()["last_snapshot"].get(sym, 0)
 
-        last_qty = last_snapshot.get(sym, 0)
-
-        # Detect partial/full exit
         if last_qty > qty:
             exit_qty = last_qty - qty
-            exit_price = ltp  # assume exit at last LTP
-
-            # Determine status
+            exit_price = ltp
             df_positions.at[idx, "ExitPrice"] = exit_price
-            if qty == 0:
-                df_positions.at[idx, "Status"] = "EXIT"
-            else:
-                df_positions.at[idx, "Status"] = "PARTIAL_EXIT"
+            df_positions.at[idx, "Status"] = "EXIT" if qty == 0 else "PARTIAL_EXIT"
 
             pnl = (exit_price - avg_price) * exit_qty
-            pct_return = ((exit_price - avg_price)/avg_price)*100
-
+            pct = ((exit_price - avg_price)/avg_price)*100
             exit_records.append({
                 "Symbol": sym,
                 "Qty": exit_qty,
                 "AvgPrice": avg_price,
                 "ExitPrice": exit_price,
                 "P&L": round(pnl, 2),
-                "PercentReturn": round(pct_return, 2),
+                "PercentReturn": round(pct, 2),
                 "trade_date": datetime.now().isoformat(),
                 "created_at": datetime.now(timezone.utc).isoformat()
             })
 
-        # For running positions
-        df_positions.at[idx, "P&L (₹)"] = round((ltp - avg_price) * qty, 2) if qty > 0 else 0
-        df_positions.at[idx, "% Return"] = round(((ltp - avg_price)/avg_price)*100, 2) if qty > 0 else 0
+    # Update snapshot
+    globals()["last_snapshot"] = {row["Symbol"]: row["Qty"] for _, row in df_positions.iterrows()}
 
-    return df_positions, exit_records
+    # -------------------- Save Exits --------------------
+    if exit_records:
+        supabase.table("positions_history").insert(exit_records).execute()
 
+    # -------------------- Summary --------------------
+    total_pnl = df_positions["P&L (₹)"].sum()
+    total_pct = df_positions["% Return"].mean()
 
-# -------------------- Save Exited Trades to Supabase --------------------
-def save_exited_positions(exit_records):
-    """
-    Save only EXIT / PARTIAL_EXIT trades to Supabase
-    """
-    if not exit_records:
-        return "No exited trades to save"
+    summary = {"total_pnl": round(total_pnl,2), "total_pct": round(total_pct,2)}
 
-    supabase.table("positions_history").insert(exit_records).execute()
-    return f"{len(exit_records)} exited trades saved to Supabase ✅"
-
-
-# -------------------- Example Usage --------------------
-if __name__ == "__main__":
-    # Step 1: fetch positions
-    df_pos, msg = get_positions()
-    if df_pos is not None:
-        # Step 2: simulate LTP (replace with real LTP fetch)
-        ltp_data = {row["Symbol"]: row["AvgPrice"]*1.02 for _, row in df_pos.iterrows()}  # +2% example
-        last_snapshot = {row["Symbol"]: row["Qty"] for _, row in df_pos.iterrows()}
-
-        # Step 3: update positions with LTP & detect exit
-        df_pos, exit_records = update_positions_ltp(df_pos, ltp_data, last_snapshot)
-
-        # Step 4: save exited positions
-        msg_save = save_exited_positions(exit_records)
-
-        # Step 5: display
-        print(df_pos)
-        print(msg_save)
+    return df_positions, summary
