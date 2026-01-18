@@ -46,8 +46,9 @@ h1, h2, h3, h4, h5 {
 # HERO TEXT ABOVE IMAGE
 # =============================
 st.markdown("""
-<div style="text-align:center; color:white; padding-bottom:10px;">
-    <h1 style="font-size:42px;">Build Your Automated Trading System</h1>
+<div style="text-align:center; color:white; padding-bottom:5px;">
+    <h1 style="font-size:38px;">Build Your Emotional Discipline</h1>
+    <h3 style="font-size:24px;">With Our Automated Trading System</h3>
 </div>
 """, unsafe_allow_html=True)
 
@@ -79,6 +80,7 @@ st.markdown("""
     <h2 style="font-size:30px;">KOTAK ALGO TRADE ™</h2>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 # =============================
