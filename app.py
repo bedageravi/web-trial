@@ -20,7 +20,7 @@ st.set_page_config(page_title="Algo Trade", layout="wide")
 # =============================
 # HERO BACKGROUND IMAGE + SLOGAN
 # =============================
-hero_image_url = "https://images.unsplash.com/photo-1621416894569-0f39ed31d247?auto=format&fit=crop&w=1920&q=80"
+hero_image_url = "https://cdn.pixabay.com/video/2020/01/14/31251-385265625_large.mp4"
 
 st.markdown(
     f"""
