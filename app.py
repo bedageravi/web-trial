@@ -103,12 +103,21 @@ else:
     # POSITIONS
     # -------------------------
     with st.spinner("Fetching Positions..."):
-        df_positions, msg_pos = get_positions()
-        if df_positions is not None:
-            st.subheader("📊 MTF Positions")
-            st.dataframe(df_positions, use_container_width=True)
-        else:
-            st.warning(msg_pos)
+    result = get_positions()
+
+    if isinstance(result, tuple) and isinstance(result[0], pd.DataFrame):
+        df_positions, summary = result
+
+        st.subheader("📊 MTF Positions")
+
+        col1, col2 = st.columns(2)
+        col1.metric("Overall P&L (₹)", summary["total_pnl"])
+        col2.metric("Overall Return %", summary["total_pct"])
+
+        st.dataframe(df_positions, use_container_width=True)
+    else:
+        st.warning(result[1] if result else "No positions found")
+
 
     # -------------------------
     # ORDERS
