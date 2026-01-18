@@ -125,7 +125,7 @@ else:
                 else:
                     return 'color: white'
 
-            # Symbol column black, numeric columns white, P&L colored
+            # Symbol column black, numeric columns black, P&L colored
             styled_df = df_positions.style.applymap(color_pnl, subset=["P&L (₹)", "% Return"]) \
                                            .applymap(lambda x: 'color: black', subset=["Symbol"]) \
                                            .applymap(lambda x: 'color: black', subset=["Qty","AvgPrice","LTP"])
