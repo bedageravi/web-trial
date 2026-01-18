@@ -45,7 +45,7 @@ div.stButton > button:first-child {
 # =============================
 IMAGE_LIST = [
     "https://images.pexels.com/photos/6770775/pexels-photo-6770775.jpeg",
-    "https://images.pexels.com/photos/23439083/pexels-photo-23439083.jpeg",
+    "https://wallpapercave.com/wp/wp9587572.jpg",
     "https://images.pexels.com/photos/5834234/pexels-photo-5834234.jpeg"
 ]
 
