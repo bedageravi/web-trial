@@ -3,12 +3,11 @@ from streamlit_autorefresh import st_autorefresh
 from login import login_page, load_auth
 from positions import get_positions
 from orders import get_orders
-import pandas as pd
 
 # =============================
-# AUTO-REFRESH EVERY 120 SECONDS
+# AUTO-REFRESH EVERY 30 SECONDS
 # =============================
-count = st_autorefresh(interval=120*1000, limit=None, key="auto_refresh")
+count = st_autorefresh(interval=30*1000, limit=None, key="auto_refresh")
 
 st.set_page_config(page_title="Trading Web App", layout="wide")
 st.title("📈 Trading Web App")
@@ -70,19 +69,8 @@ else:
     with tab1:
         with st.spinner("Fetching Positions..."):
             df_positions, msg_pos = get_positions()
-            if df_positions is not None:
-                # Color-code P&L column
-                def color_pnl(val):
-                    if val > 0:
-                        return 'background-color: #b6fcb6'  # light green
-                    elif val < 0:
-                        return 'background-color: #fcb6b6'  # light red
-                    else:
-                        return ''
-                st.dataframe(
-                    df_positions.style.applymap(color_pnl, subset=["P&L"]),
-                    use_container_width=True
-                )
+            if df_positions is not None and not df_positions.empty:
+                st.dataframe(df_positions, use_container_width=True)
             else:
                 st.warning(msg_pos)
 
@@ -92,7 +80,7 @@ else:
     with tab2:
         with st.spinner("Fetching Orders..."):
             df_orders, msg_ord = get_orders()
-            if df_orders is not None:
+            if df_orders is not None and not df_orders.empty:
                 st.dataframe(df_orders, use_container_width=True)
             else:
                 st.warning(msg_ord)
