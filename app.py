@@ -56,16 +56,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# =============================
-# DASHBOARD CONTENT BELOW
-# =============================
-st.title("📊 Trading Dashboard")
 
-# Example dataframe (keep placeholder if get_positions fails)
-df_positions = pd.DataFrame({
-    "Symbol": ["RELIANCE", "TCS"],
-    "Qty": [10, 5],
-    "PnL": [500, 200]
 })
 st.dataframe(df_positions, width='stretch')
 
