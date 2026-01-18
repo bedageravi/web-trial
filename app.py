@@ -37,6 +37,7 @@ div.stButton > button:first-child {
 }
 h1, h2, h3, h4, h5 {
     color: white;
+    font-weight: bold;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -105,6 +106,9 @@ else:
         if isinstance(result, tuple) and isinstance(result[0], pd.DataFrame):
             df_positions, summary = result
 
+            # -------------------------
+            # Section Header
+            # -------------------------
             st.markdown('<h3>📊 MTF Positions</h3>', unsafe_allow_html=True)
 
             # Overall P&L metrics
@@ -123,7 +127,7 @@ else:
                 else:
                     return 'color: white'
 
-            # Style DataFrame: Symbol black, numeric columns white, P&L green/red
+            # Symbol column black, numeric columns white, P&L colored
             styled_df = df_positions.style.applymap(color_pnl, subset=["P&L (₹)", "% Return"]) \
                                            .applymap(lambda x: 'color: black', subset=["Symbol"]) \
                                            .applymap(lambda x: 'color: white', subset=["Qty","AvgPrice","LTP"])
