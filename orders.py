@@ -1,6 +1,6 @@
 import pandas as pd
 import requests
-from login import load_auth   # ✅ use new Supabase-based login
+from login import load_auth   # Supabase-based login
 from datetime import datetime
 
 HEADERS = {
@@ -10,10 +10,10 @@ HEADERS = {
     "accept": "application/json"
 }
 
-def get_orders(user_id="default_user"):
+def get_orders():
     """Fetch Kotak today’s orders using Supabase auth"""
 
-    auth_data = load_auth(user_id)
+    auth_data = load_auth()
     if not auth_data:
         return None, "Auth token not found. Please login first."
 
@@ -22,7 +22,7 @@ def get_orders(user_id="default_user"):
         return None, "BASE_URL missing. Please login again."
 
     HEADERS["Auth"] = auth_data.get("auth_token")
-    HEADERS["Sid"] = auth_data.get("sid")
+    HEADERS["Sid"] = auth_data.get("auth_sid")
 
     try:
         r = requests.get(
@@ -35,6 +35,7 @@ def get_orders(user_id="default_user"):
         return None, f"Error fetching orders: {e}"
 
     today_str = datetime.now().strftime("%d-%b-%Y")
+
     today_orders = [
         o for o in data
         if o.get("ordDtTm", "").startswith(today_str)
