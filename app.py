@@ -12,73 +12,69 @@ count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
 import streamlit as st
 
-# =============================
-# PAGE CONFIG
-# =============================
 st.set_page_config(page_title="Algo Trade", layout="wide")
 
-# =============================
-# HERO BACKGROUND IMAGE + SLOGAN
-# =============================
-hero_image_url = "https://cdn.pixabay.com/video/2020/01/14/31251-385265625_large.mp4"
+VIDEO_URL = "https://cdn.pixabay.com/video/2020/01/14/31251-385265625_large.mp4"
 
 st.markdown(
     f"""
     <style>
-    .hero {{
-        background-image: url("{hero_image_url}");
-        background-size: cover;
-        background-position: center;
-        height: 450px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+    .video-bg {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1;
+    }}
+    .overlay {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: -1;
+    }}
+    .hero-text {{
+        position: relative;
         text-align: center;
         color: white;
+        padding-top: 120px;
         font-family: 'Arial', sans-serif;
     }}
-    .hero h1 {{
-        font-size: 60px;
-        margin: 0;
+    .hero-text h1 {{
+        font-size: 64px;
         font-weight: bold;
-        text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
     }}
-    .hero p {{
-        font-size: 28px;
-        margin: 5px 0 0 0;
-        text-shadow: 1px 1px 6px rgba(0,0,0,0.7);
-    }}
-    .brands {{
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-    }}
-    .brands img {{
-        margin: 0 15px;
-        height: 50px;
-        opacity: 0.8;
+    .hero-text p {{
+        font-size: 32px;
     }}
     </style>
 
-    <div class="hero">
+    <video autoplay muted loop class="video-bg">
+        <source src="{VIDEO_URL}" type="video/mp4">
+    </video>
+
+    <div class="overlay"></div>
+
+    <div class="hero-text">
         <h1>Build Your System with</h1>
-        <p>ALGO TRADE</p>
-        <div class="brands">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png" />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Apple-logo.png" />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Microsoft_logo_%282012%29.svg" />
-        </div>
+        <p><strong>ALGO TRADE</strong></p>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# =============================
-# BELOW THIS YOU CAN PUT YOUR TRADING LOGIC
-# =============================
-st.title("📊 Trading Dashboard")
-st.write("Your dashboard content goes here.")
+# =====================
+# Your app content below
+# =====================
+
+st.title("📈 Trading Web App")
+st.write("Your dashboard content starts here...")
+
+
 
 
 # =============================
