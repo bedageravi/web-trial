@@ -63,14 +63,6 @@ st.write("")  # small spacing
 
 st.title("📊 Trading Dashboard")
 
-# Example dataframe (replace with get_positions & get_orders later)
-df_positions = pd.DataFrame({
-    "Symbol": ["RELIANCE", "TCS"],
-    "Qty": [10, 5],
-    "PnL": [500, 200]
-})
-st.dataframe(df_positions, width='stretch')
-
 # =============================
 # SESSION INIT
 # =============================
