@@ -97,45 +97,44 @@ else:
     if st.button("🔄 Refresh Dashboard"):
         st.session_state.manual_refresh += 1
 
-    # -------------------------
-    # POSITIONS (WITH LTP + P&L)
-    # -------------------------
-    with st.spinner("Fetching Positions..."):
-        result = get_positions()
+  # -------------------------
+# POSITIONS (WITH LTP + P&L)
+# -------------------------
+with st.spinner("Fetching Positions..."):
+    result = get_positions()
 
-        if isinstance(result, tuple) and isinstance(result[0], pd.DataFrame):
-            df_positions, summary = result
+    if isinstance(result, tuple) and isinstance(result[0], pd.DataFrame):
+        df_positions, summary = result
 
-            # -------------------------
-            # Section Header
-            # -------------------------
-            st.markdown('<h3 style="color:white; font-weight:bold;">📊 MTF Positions</h3>', unsafe_allow_html=True)
+        # Section Header
+        st.markdown('<h3 style="color:white; font-weight:bold;">📊 MTF Positions</h3>', unsafe_allow_html=True)
 
-            # Overall P&L metrics
-            col1, col2 = st.columns(2)
-            col1.markdown(f'<h4 style="color:white; font-weight:bold;">Overall P&L (₹): {summary["total_pnl"]}</h4>', unsafe_allow_html=True)
-            col2.markdown(f'<h4 style="color:white; font-weight:bold;">Overall Return %: {summary["total_pct"]}</h4>', unsafe_allow_html=True)
+        # Overall P&L metrics
+        col1, col2 = st.columns(2)
+        col1.markdown(f'<h4 style="color:white; font-weight:bold;">Overall P&L (₹): {summary["total_pnl"]}</h4>', unsafe_allow_html=True)
+        col2.markdown(f'<h4 style="color:white; font-weight:bold;">Overall Return %: {summary["total_pct"]}</h4>', unsafe_allow_html=True)
 
-            # -------------------------
-            # COLOR FORMATTING
-            # -------------------------
-            def color_pnl(val):
-                if val > 0:
-                    return 'color: green; font-weight:bold'
-                elif val < 0:
-                    return 'color: red; font-weight:bold'
-                else:
-                    return 'color: white'
+        # -------------------------
+        # COLOR FORMATTING
+        # -------------------------
+        def color_pnl(val):
+            if val > 0:
+                return 'color: green; font-weight:bold'
+            elif val < 0:
+                return 'color: red; font-weight:bold'
+            else:
+                return 'color: white'
 
-            # Symbol column black, numeric columns white, P&L colored
-            styled_df = df_positions.style.applymap(color_pnl, subset=["P&L (₹)", "% Return"]) \
-                                           .applymap(lambda x: 'color: black', subset=["Symbol"]) \
-                                           .applymap(lambda x: 'color: white', subset=["Qty","AvgPrice","LTP"])
+        # Symbol column black, numeric columns white, P&L colored
+        styled_df = df_positions.style.applymap(color_pnl, subset=["P&L (₹)", "% Return"]) \
+                                       .applymap(lambda x: 'color: black', subset=["Symbol"]) \
+                                       .applymap(lambda x: 'color: white', subset=["Qty","AvgPrice","LTP"])
 
-            st.dataframe(styled_df, width='stretch', height=400)
+        # Display table WITHOUT extra rows
+        st.dataframe(styled_df, width='stretch', height=None)  # remove height to fit rows automatically
 
-        else:
-            st.warning(result[1] if result else "No positions found")
+    else:
+        st.warning(result[1] if result else "No positions found")
 
     # -------------------------
     # ORDERS
