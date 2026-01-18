@@ -9,7 +9,7 @@ import random
 # =============================
 # AUTO REFRESH (1 minute)
 # =============================
-st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
+st_autorefresh(interval=100*1000, limit=None, key="auto_refresh")
 
 # =============================
 # PAGE CONFIG
