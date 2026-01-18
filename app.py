@@ -54,7 +54,11 @@ selected_image = random.choice(IMAGE_LIST)
 # =============================
 # TOP IMAGE (MEDIUM SIZE)
 # =============================
-st.image(selected_image, width=10)
+col1, col2, col3 = st.columns([1,2,1])
+
+with col2:
+    st.image(selected_image, width=250)
+
 
 # =============================
 # HERO TEXT
