@@ -109,12 +109,12 @@ else:
             # -------------------------
             # Section Header
             # -------------------------
-            st.markdown('<h3>📊 MTF Positions</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 style="color:white; font-weight:bold;">📊 MTF Positions</h3>', unsafe_allow_html=True)
 
             # Overall P&L metrics
             col1, col2 = st.columns(2)
-            col1.markdown(f'<h4>Overall P&L (₹): {summary["total_pnl"]}</h4>', unsafe_allow_html=True)
-            col2.markdown(f'<h4>Overall Return %: {summary["total_pct"]}</h4>', unsafe_allow_html=True)
+            col1.markdown(f'<h4 style="color:white; font-weight:bold;">Overall P&L (₹): {summary["total_pnl"]}</h4>', unsafe_allow_html=True)
+            col2.markdown(f'<h4 style="color:white; font-weight:bold;">Overall Return %: {summary["total_pct"]}</h4>', unsafe_allow_html=True)
 
             # -------------------------
             # COLOR FORMATTING
@@ -143,7 +143,7 @@ else:
     with st.spinner("Fetching Orders..."):
         df_orders, msg_ord = get_orders()
         if df_orders is not None and not df_orders.empty:
-            st.markdown('<h3>🧾 Today\'s Orders</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 style="color:white; font-weight:bold;">🧾 Today\'s Orders</h3>', unsafe_allow_html=True)
             st.dataframe(df_orders, width='stretch', height=300)
         else:
             st.warning(msg_ord)
