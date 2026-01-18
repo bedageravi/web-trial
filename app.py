@@ -42,7 +42,8 @@ def set_bg_image_url(image_url):
 
 # Example with an online hosted image (WORKING)
 set_bg_image_url(
-    "https://images.unsplash.com/photo-1518544801976-3e159e50e5bb?auto=format&fit=crop&w=1920&q=80"
+    "set_bg_image_url("https://pixabay.com/get/g8e1063b9866f45780c5ea65614c1ae38a0340ca119983652950fc80a47a6045d4fbf3151448d538003e959b68b3ea19e1b2e8f071b1ebe7c0da149b2768f5a6c_1280.jpg")
+"
 )
 
 
