@@ -17,7 +17,7 @@ st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 st.set_page_config(page_title="ALGO TRADE ™", layout="wide")
 
 # =============================
-# BLACK GRADIENT BACKGROUND
+# BACKGROUND (UNCHANGED)
 # =============================
 st.markdown("""
 <style>
@@ -44,27 +44,26 @@ div.stButton > button:first-child {
 # IMAGE LIST
 # =============================
 IMAGE_LIST = [
-    "https://images.pexels.com/photos/5834234/pexels-photo-5834234.jpeg",
-    "https://images.pexels.com/photos/6770775/pexels-photo-6770775.jpeg",
-    "https://images.pexels.com/photos/23439083/pexels-photo-23439083.jpeg"
+    "https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg",
+    "https://cdn.pixabay.com/photo/2017/03/30/15/10/stock-2187070_1280.jpg",
+    "https://cdn.pixabay.com/photo/2018/05/02/12/42/bitcoin-3368467_1280.jpg"
 ]
 
 selected_image = random.choice(IMAGE_LIST)
 
 # =============================
-# TOP IMAGE (MEDIUM SIZE)
+# SMALL CENTERED IMAGE (REAL SIZE CONTROL)
 # =============================
 col1, col2, col3 = st.columns([1,2,1])
 
 with col2:
-    st.image(selected_image, width=250)
-
+    st.image(selected_image, width=220)
 
 # =============================
 # HERO TEXT
 # =============================
 st.markdown("""
-<div style="text-align:center; color:white; padding-top:15px; padding-bottom:25px;">
+<div style="text-align:center; color:white; padding-top:10px; padding-bottom:25px;">
     <h1 style="font-size:42px;">Build Your Automated Trading System</h1>
     <h2 style="font-size:30px;">ALGO TRADE ™</h2>
 </div>
