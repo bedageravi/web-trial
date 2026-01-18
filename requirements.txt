@@ -4,3 +4,4 @@ pyotp
 pandas
 streamlit-autorefresh
 supabase
+yfinance
