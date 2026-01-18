@@ -24,20 +24,17 @@ if "manual_refresh" not in st.session_state:
 # -----------------------------
 # BACKGROUND IMAGE
 # -----------------------------
-def set_bg_image(image_path):
-    with open(image_path, "rb") as f:
-        data = f.read()
-        encoded = base64.b64encode(data).decode()
+def set_bg_image_url(image_url):
     page_bg_img = f"""
     <style>
     body {{
-    background-image: url("data:image/png;base64,{encoded}");
+    background-image: url('{image_url}');
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
     }}
     section.main {{
-    background-color: rgba(255, 255, 255, 0.85);  /* keeps tables readable */
+    background-color: rgba(255, 255, 255, 0.85);
     border-radius: 10px;
     padding: 10px;
     }}
@@ -45,8 +42,8 @@ def set_bg_image(image_path):
     """
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Set your uploaded PNG as background
-set_bg_image("/mnt/data/9c859f5f-5039-4c38-8424-f17c2faf008a.png")
+# Example with an online hosted image
+set_bg_image_url("https://i.imgur.com/YourImageID.png")
 
 # -----------------------------
 # CHECK TOKEN
