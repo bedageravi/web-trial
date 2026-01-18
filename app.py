@@ -17,7 +17,7 @@ st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 st.set_page_config(page_title="ALGO TRADE ™", layout="wide")
 
 # =============================
-# BACKGROUND (UNCHANGED)
+# BACKGROUND
 # =============================
 st.markdown("""
 <style>
@@ -52,12 +52,16 @@ IMAGE_LIST = [
 selected_image = random.choice(IMAGE_LIST)
 
 # =============================
-# SMALL CENTERED IMAGE (REAL SIZE CONTROL)
+# CENTERED IMAGE (PERFECT)
 # =============================
-col1, col2, col3 = st.columns([1,2,1])
-
-with col2:
-    st.image(selected_image, width=220)
+st.markdown(
+    f"""
+    <div style="display:flex; justify-content:center; padding-top:20px;">
+        <img src="{selected_image}" width="220" />
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # =============================
 # HERO TEXT
