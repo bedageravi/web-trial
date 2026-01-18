@@ -1,6 +1,6 @@
 import pandas as pd
 import requests
-from login import load_auth   # Supabase-based login
+from login import load_auth   # Supabase login
 
 HEADERS = {
     "Auth": None,
@@ -10,8 +10,12 @@ HEADERS = {
 }
 
 def get_positions():
-    """Fetch Kotak MTF positions using Supabase auth"""
+    """
+    Fetch Kotak MTF positions using Supabase-authenticated login.
+    Returns a DataFrame of MTF positions or None with message.
+    """
 
+    # Load latest auth session from Supabase
     auth_data = load_auth()
     if not auth_data:
         return None, "Auth token not found. Please login first."
@@ -20,6 +24,7 @@ def get_positions():
     if not base_url:
         return None, "BASE_URL missing. Please login again."
 
+    # Set headers for API
     HEADERS["Auth"] = auth_data.get("auth_token")
     HEADERS["Sid"] = auth_data.get("auth_sid")
 
@@ -33,9 +38,8 @@ def get_positions():
     except Exception as e:
         return None, f"Error fetching positions: {e}"
 
-    # === SAME MTF LOGIC AS YOUR PC SCRIPT ===
+    # Filter only MTF positions
     mtf_positions = []
-
     for p in data:
         if p.get("prod") != "MTF":
             continue
