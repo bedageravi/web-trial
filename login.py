@@ -5,19 +5,19 @@ from supabase import create_client, Client
 import time
 
 # =========================
-# SUPABASE CONFIG (SIMPLE)
+# HARD-CODED SUPABASE CONFIG
 # =========================
-SUPABASE_URL = st.secrets["url"]          # your supabase URL
-SUPABASE_KEY = st.secrets["anon_key"]     # your supabase service key or anon key
+SUPABASE_URL = "https://kyaqnoyrwyrekygfarey.supabase.co"
+SUPABASE_KEY = "sb_secret_WX_R_MMSvmU_-NQgsARXmw_v-l7EKNM"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # =========================
-# KOTAK SECRETS
+# HARD-CODED KOTAK SECRETS
 # =========================
-ACCESS_TOKEN_SHORT = st.secrets["kotak_access_token"]
-MOBILE = st.secrets["kotak_mobile"]
-UCC = st.secrets["kotak_ucc"]
-TOTP_SECRET = st.secrets["kotak_totp_secret"]
+ACCESS_TOKEN_SHORT = "your-access-token"
+MOBILE = "+91xxxxxxxxxx"
+UCC = "XXTBL"
+TOTP_SECRET = "your-totp-secret"
 
 # =========================
 # GLOBAL HEADERS
