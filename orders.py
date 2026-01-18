@@ -1,6 +1,6 @@
 import pandas as pd
 import requests
-from login import load_auth   # ✅ correct import
+from login import load_auth   # ✅ use new Supabase-based login
 from datetime import datetime
 
 HEADERS = {
@@ -10,19 +10,19 @@ HEADERS = {
     "accept": "application/json"
 }
 
-def get_orders():
-    """Fetch Kotak today’s orders"""
+def get_orders(user_id="default_user"):
+    """Fetch Kotak today’s orders using Supabase auth"""
 
-    auth_data = load_auth()
+    auth_data = load_auth(user_id)
     if not auth_data:
-        return None, "Auth file not found. Please login first."
+        return None, "Auth token not found. Please login first."
 
-    base_url = auth_data.get("BASE_URL")
+    base_url = auth_data.get("base_url")
     if not base_url:
         return None, "BASE_URL missing. Please login again."
 
-    HEADERS["Auth"] = auth_data.get("AUTH_TOKEN")
-    HEADERS["Sid"] = auth_data.get("AUTH_SID")
+    HEADERS["Auth"] = auth_data.get("auth_token")
+    HEADERS["Sid"] = auth_data.get("sid")
 
     try:
         r = requests.get(
