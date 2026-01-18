@@ -25,7 +25,7 @@ def set_bg_color():
         <style>
         /* Full page solid purple background */
         [data-testid="stAppViewContainer"] {
-            background-color: #6a0dad;  /* Solid purple */
+            background-color: #5D3FD3;  /* Solid purple */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
