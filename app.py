@@ -64,21 +64,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# =============================
-# SAMPLE DATA
-# =============================
-df_positions = pd.DataFrame({
-    "Symbol": ["RELIANCE", "TCS", "INFY"],
-    "Qty": [10, 5, 8],
-    "PnL": [500, -200, 350]
-})
-
-df_orders = pd.DataFrame({
-    "OrderID": [101, 102, 103],
-    "Symbol": ["RELIANCE", "TCS", "INFY"],
-    "Qty": [10, 5, 8],
-    "Status": ["Filled", "Pending", "Cancelled"]
-})
 
 # =============================
 # GLASSMORPHIC TABLE FUNCTION
