@@ -11,6 +11,9 @@ import base64
 count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
 st.set_page_config(page_title="Trading Web App", layout="wide")
+
+set_black_background()   # 👈 PUT THIS LINE HERE
+
 st.title("📈 Trading Web App")
 
 # -----------------------------
@@ -24,21 +27,18 @@ if "manual_refresh" not in st.session_state:
 # -----------------------------
 # BACKGROUND IMAGE
 # -----------------------------
-def set_bg_image_url(image_url):
+def set_black_background():
     st.markdown(
-        f"""
+        """
         <style>
-        [data-testid="stAppViewContainer"] {{
-            background-image: url("{image_url}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }}
+        [data-testid="stAppViewContainer"] {
+            background-color: black;
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
+
 
 # Example with an online hosted image (WORKING)
 set_bg_image_url("https://pixabay.com/get/g8e1063b9866f45780c5ea65614c1ae38a0340ca119983652950fc80a47a6045d4fbf3151448d538003e959b68b3ea19e1b2e8f071b1ebe7c0da149b2768f5a6c_1280.jpg")
