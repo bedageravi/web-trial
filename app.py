@@ -18,6 +18,9 @@ st.set_page_config(page_title="ALGO TRADE ™", layout="wide")
 # =============================
 # SOLID PURPLE + BLACK BACKGROUND
 # =============================
+# =============================
+# SOLID PURPLE + BLACK BACKGROUND
+# =============================
 def set_bg_color():
     st.markdown(
         """
@@ -35,12 +38,22 @@ def set_bg_color():
         [data-testid="stToolbar"] {
             right: 1rem;
         }
+        /* Style buttons for visibility */
+        div.stButton > button:first-child {
+            background-color: #ffffff;
+            color: #000000;
+            font-weight: bold;
+            border-radius: 8px;
+            height: 40px;
+            width: 180px;
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
 
 set_bg_color()
+
 
 # =============================
 # TOP IMAGE (YOU CAN CHANGE URL)
