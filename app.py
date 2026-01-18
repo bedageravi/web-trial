@@ -128,7 +128,7 @@ else:
             # Symbol column black, numeric columns white, P&L colored
             styled_df = df_positions.style.applymap(color_pnl, subset=["P&L (₹)", "% Return"]) \
                                            .applymap(lambda x: 'color: black', subset=["Symbol"]) \
-                                           .applymap(lambda x: 'color: white', subset=["Qty","AvgPrice","LTP"])
+                                           .applymap(lambda x: 'color: black', subset=["Qty","AvgPrice","LTP"])
 
             # Display table with auto height, only actual rows
             st.dataframe(styled_df, width='stretch', height='auto')
