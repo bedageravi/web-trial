@@ -27,23 +27,16 @@ if "manual_refresh" not in st.session_state:
 def set_bg_image_url(image_url):
     page_bg_img = f"""
     <style>
-    body {{
-    background-image: url('{image_url}');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    }}
-    section.main {{
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 10px;
-    padding: 10px;
+    .stApp {{
+        background-image: url("{image_url}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
     }}
     </style>
     """
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Example with an online hosted image
-set_bg_image_url("https://i.imgur.com/YourImageID.png")
 
 # -----------------------------
 # CHECK TOKEN
