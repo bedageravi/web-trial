@@ -3,29 +3,15 @@ from streamlit_autorefresh import st_autorefresh
 from login import login_page, load_auth
 from positions import get_positions
 from orders import get_orders
+import base64
 
 # =============================
-# AUTO-REFRESH EVERY 30 SECONDS
+# AUTO-REFRESH EVERY 1 MINUTE
 # =============================
-count = st_autorefresh(interval=30*1000, limit=None, key="auto_refresh")
+count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
 st.set_page_config(page_title="Trading Web App", layout="wide")
 st.title("📈 Trading Web App")
-
-# -----------------------------
-# BACKGROUND IMAGE (CSS)
-# -----------------------------
-page_bg_img = """
-<style>
-body {
-background-image: url('https://images.unsplash.com/photo-1612392061780-d62c8b9bce36?auto=format&fit=crop&w=1950&q=80');
-background-size: cover;
-background-repeat: no-repeat;
-background-attachment: fixed;
-}
-</style>
-"""
-st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # -----------------------------
 # SESSION INIT
@@ -34,6 +20,33 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "manual_refresh" not in st.session_state:
     st.session_state.manual_refresh = 0
+
+# -----------------------------
+# BACKGROUND IMAGE
+# -----------------------------
+def set_bg_image(image_path):
+    with open(image_path, "rb") as f:
+        data = f.read()
+        encoded = base64.b64encode(data).decode()
+    page_bg_img = f"""
+    <style>
+    body {{
+    background-image: url("data:image/png;base64,{encoded}");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    }}
+    section.main {{
+    background-color: rgba(255, 255, 255, 0.85);  /* keeps tables readable */
+    border-radius: 10px;
+    padding: 10px;
+    }}
+    </style>
+    """
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
+# Set your uploaded PNG as background
+set_bg_image("/mnt/data/9c859f5f-5039-4c38-8424-f17c2faf008a.png")
 
 # -----------------------------
 # CHECK TOKEN
@@ -59,31 +72,26 @@ else:
         st.session_state.manual_refresh += 1  # triggers rerun automatically
 
     # -------------------------
-    # TABS FOR POSITIONS & ORDERS
+    # POSITIONS
     # -------------------------
-    tab1, tab2 = st.tabs(["📊 MTF Positions", "🧾 Today's Orders"])
+    with st.spinner("Fetching Positions..."):
+        df_positions, msg_pos = get_positions()
+        if df_positions is not None:
+            st.subheader("📊 MTF Positions")
+            st.dataframe(df_positions, use_container_width=True)
+        else:
+            st.warning(msg_pos)
 
     # -------------------------
-    # POSITIONS TAB
+    # ORDERS
     # -------------------------
-    with tab1:
-        with st.spinner("Fetching Positions..."):
-            df_positions, msg_pos = get_positions()
-            if df_positions is not None and not df_positions.empty:
-                st.dataframe(df_positions, use_container_width=True)
-            else:
-                st.warning(msg_pos)
-
-    # -------------------------
-    # ORDERS TAB
-    # -------------------------
-    with tab2:
-        with st.spinner("Fetching Orders..."):
-            df_orders, msg_ord = get_orders()
-            if df_orders is not None and not df_orders.empty:
-                st.dataframe(df_orders, use_container_width=True)
-            else:
-                st.warning(msg_ord)
+    with st.spinner("Fetching Orders..."):
+        df_orders, msg_ord = get_orders()
+        if df_orders is not None:
+            st.subheader("🧾 Today's Orders")
+            st.dataframe(df_orders, use_container_width=True)
+        else:
+            st.warning(msg_ord)
 
     st.divider()
 
