@@ -8,17 +8,17 @@ from supabase import create_client, Client
 # ------------------------
 # SUPABASE CONFIG
 # ------------------------
-SUPABASE_URL = "https://kyaqnoyrwyrekygfarey.supabase.co"
-SUPABASE_SERVICE_KEY = "sb_secret_WX_R_MMSvmU_-NQgsARXmw_v-l7EKNM"
+SUPABASE_URL = st.secrets["url"]
+SUPABASE_SERVICE_KEY = st.secrets["anon_key"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 # ------------------------
 # KOTAK CREDENTIALS
 # ------------------------
-ACCESS_TOKEN_SHORT = "ce5191a8-b2d3-44ff-bc3c-65970498e2f0"
-MOBILE = "+919766728415"
-UCC = "XXTBL"
-TOTP_SECRET = "OBEESAYVC2V3IA5YYHCN6EB7UI"
+ACCESS_TOKEN_SHORT = os.getenv("ACCESS_TOKEN_SHORT")
+MOBILE = os.getenv("MOBILE")
+UCC = os.getenv("UCC")
+TOTP_SECRET = os.getenv("TOTP_SECRET")
 
 # ------------------------
 # GLOBAL HEADERS
