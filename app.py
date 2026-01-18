@@ -121,11 +121,12 @@ else:
                 elif val < 0:
                     return 'color: red; font-weight:bold'
                 else:
-                    return 'color: black'
+                    return 'color: white'
 
-            # Only style the relevant columns
+            # Style DataFrame: Symbol black, numeric columns white, P&L green/red
             styled_df = df_positions.style.applymap(color_pnl, subset=["P&L (₹)", "% Return"]) \
-                                           .applymap(lambda x: 'color: black', subset=["Symbol","Qty","AvgPrice","LTP"])
+                                           .applymap(lambda x: 'color: black', subset=["Symbol"]) \
+                                           .applymap(lambda x: 'color: white', subset=["Qty","AvgPrice","LTP"])
 
             st.dataframe(styled_df, width='stretch', height=400)
 
