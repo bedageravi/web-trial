@@ -40,6 +40,11 @@ def set_bg_image_url(image_url):
         unsafe_allow_html=True
     )
 
+# Example with an online hosted image (WORKING)
+set_bg_image_url(
+    "https://images.unsplash.com/photo-1518544801976-3e159e50e5bb?auto=format&fit=crop&w=1920&q=80"
+)
+
 
 
 # -----------------------------
