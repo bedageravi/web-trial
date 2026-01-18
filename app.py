@@ -16,22 +16,13 @@ count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 st.set_page_config(page_title="Algo Trade", layout="wide")
 
 # =============================
-# BACKGROUND: BLACK + TOP IMAGE HERO
+# TOP HERO IMAGE WITH SLOGAN
 # =============================
 hero_image_url = "https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg"
 
 st.markdown(
     f"""
     <style>
-    /* ENTIRE PAGE BLACK BACKGROUND */
-    [data-testid="stAppViewContainer"] {{
-        background-color: black;
-    }}
-    [data-testid="stHeader"], [data-testid="stToolbar"] {{
-        background: rgba(0,0,0,0.0);
-    }}
-
-    /* TOP HERO IMAGE */
     .top-hero {{
         background-image: url("{hero_image_url}");
         background-size: cover;
@@ -64,6 +55,21 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# =============================
+# DASHBOARD CONTENT BELOW
+# =============================
+st.write("")  # small spacing
+
+st.title("📊 Trading Dashboard")
+
+# Example dataframe (replace with get_positions & get_orders later)
+df_positions = pd.DataFrame({
+    "Symbol": ["RELIANCE", "TCS"],
+    "Qty": [10, 5],
+    "PnL": [500, 200]
+})
+st.dataframe(df_positions, width='stretch')
 
 # =============================
 # SESSION INIT
@@ -103,7 +109,7 @@ else:
         df_positions, msg_pos = get_positions()
         if df_positions is not None:
             st.subheader("📊 MTF Positions")
-            st.dataframe(df_positions, width='stretch')  # updated
+            st.dataframe(df_positions, width='stretch')
         else:
             st.warning(msg_pos)
 
@@ -114,7 +120,7 @@ else:
         df_orders, msg_ord = get_orders()
         if df_orders is not None:
             st.subheader("🧾 Today's Orders")
-            st.dataframe(df_orders, width='stretch')  # updated
+            st.dataframe(df_orders, width='stretch')
         else:
             st.warning(msg_ord)
 
