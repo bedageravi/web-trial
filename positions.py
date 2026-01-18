@@ -1,46 +1,6 @@
 import pandas as pd
-import requests
-from login import load_auth
-from tvDatafeed import TvDatafeed, Interval
-import streamlit as st
-
-# ---------------- TV LOGIN ----------------
-TV_USERNAME = "bedageravi605@gmail.com"
-TV_PASSWORD = "Anujbedage@45678"
-
-_tv = None
-
-def get_tv():
-    """Login to TV only once"""
-    global _tv
-    if _tv is None:
-        try:
-            _tv = TvDatafeed(TV_USERNAME, TV_PASSWORD)
-        except Exception as e:
-            print("TV login failed:", e)
-            _tv = None
-    return _tv
-
-# ---------------- CACHE LTP ----------------
-@st.cache_data(ttl=60)
-def get_ltp(symbol, exchange="NSE"):
-    """Fetch latest LTP from TradingView, cached 60 sec"""
-    tv = get_tv()
-    if tv is None:
-        return None
-    try:
-        df = tv.get_hist(
-            symbol=symbol,
-            exchange=exchange,
-            interval=Interval.in_1_minute,
-            n_bars=1
-        )
-        if df is None or df.empty:
-            return None
-        return float(df["close"].iloc[-1])
-    except Exception as e:
-        print(f"LTP fetch failed for {symbol}: {e}")
-        return None
+import yfinance as yf
+from login import load_auth   # Supabase-based login
 
 # ---------------- KOTAK HEADERS ----------------
 HEADERS = {
@@ -63,8 +23,29 @@ def safe_float(v):
     except:
         return 0.0
 
+# ---------------- GET LTP FROM YFINANCE ----------------
+def get_ltp(symbol):
+    """
+    Fetch live LTP using yfinance for NSE stocks.
+    Example: ASHOKLEY-EQ -> ASHOKLEY.NS
+    """
+    try:
+        yf_symbol = symbol.replace("-EQ", ".NS")
+        ticker = yf.Ticker(yf_symbol)
+        data = ticker.history(period="1d", interval="1m")
+        if data.empty:
+            return None
+        return round(data['Close'].iloc[-1], 2)  # fixed FutureWarning
+    except Exception as e:
+        print(f"LTP fetch failed for {symbol}: {e}")
+        return None
+
 # ---------------- MAIN FUNCTION ----------------
 def get_positions():
+    """
+    Fetch Kotak MTF positions, calculate LTP, P&L, %Return,
+    and return overall P&L summary.
+    """
     auth_data = load_auth()
     if not auth_data:
         return None, "Auth token not found. Please login first."
@@ -77,6 +58,7 @@ def get_positions():
     HEADERS["Sid"] = auth_data.get("auth_sid")
 
     try:
+        import requests
         r = requests.get(
             f"{base_url}/quick/user/positions",
             headers=HEADERS,
