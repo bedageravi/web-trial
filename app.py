@@ -11,6 +11,7 @@ import base64
 count = st_autorefresh(interval=60*1000, limit=None, key="auto_refresh")
 
 import streamlit as st
+import pandas as pd
 
 # =============================
 # PAGE CONFIG
@@ -18,56 +19,58 @@ import streamlit as st
 st.set_page_config(page_title="Algo Trade", layout="wide")
 
 # =============================
-# HERO IMAGE URL
+# SET FULL PAGE BACKGROUND IMAGE
 # =============================
-hero_image_url = "https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg"  # example HD bull image
+def set_bg_image(image_url):
+    st.markdown(
+        f"""
+        <style>
+        [data-testid="stAppViewContainer"] {{
+            background-image: url("{image_url}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }}
+        [data-testid="stHeader"] {{
+            background: rgba(0,0,0,0.0);
+        }}
+        [data-testid="stToolbar"] {{
+            right: 1rem;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Example HD image (bull / trading)
+set_bg_image("https://cdn.pixabay.com/photo/2020/06/11/19/40/bull-5284793_1280.jpg")
 
 # =============================
-# HERO SECTION WITH IMAGE + TEXT
+# HERO TEXT
 # =============================
 st.markdown(
-    f"""
-    <style>
-    .hero {{
-        background-image: url("{hero_image_url}");
-        background-size: cover;
-        background-position: center;
-        height: 450px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        color: white;
-        font-family: 'Arial', sans-serif;
-    }}
-    .hero h1 {{
-        font-size: 60px;
-        margin: 0;
-        font-weight: bold;
-        text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
-    }}
-    .hero p {{
-        font-size: 28px;
-        margin: 5px 0 0 0;
-        text-shadow: 1px 1px 6px rgba(0,0,0,0.7);
-    }}
-    </style>
-
-    <div class="hero">
-        <h1>Build Your System with</h1>
-        <p><strong>ALGO TRADE</strong></p>
+    """
+    <div style="text-align:center; padding-top:120px; color:white; text-shadow: 2px 2px 6px rgba(0,0,0,0.7);">
+        <h1 style="font-size:60px;">Build Your System with</h1>
+        <h2 style="font-size:40px;">ALGO TRADE</h2>
     </div>
     """,
     unsafe_allow_html=True
 )
 
 # =============================
-# TRADING DASHBOARD CONTENT BELOW
+# DASHBOARD CONTENT BELOW
 # =============================
 st.title("📊 Trading Dashboard")
-st.write("Your positions, orders and other content go here...")
 
+# Example dataframe
+df_positions = pd.DataFrame({
+    "Symbol": ["RELIANCE", "TCS"],
+    "Qty": [10, 5],
+    "PnL": [500, 200]
+})
+st.dataframe(df_positions, width='stretch')
 
 
 
