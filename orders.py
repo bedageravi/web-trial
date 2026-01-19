@@ -11,12 +11,8 @@ HEADERS = {
 }
 
 def get_orders():
-    """
-    Fetch Kotak today’s orders using Supabase-authenticated login.
-    Returns a DataFrame of orders or None with message.
-    """
+    """Fetch Kotak today’s orders using Supabase auth"""
 
-    # Load latest auth from Supabase
     auth_data = load_auth()
     if not auth_data:
         return None, "Auth token not found. Please login first."
@@ -25,7 +21,6 @@ def get_orders():
     if not base_url:
         return None, "BASE_URL missing. Please login again."
 
-    # Set headers
     HEADERS["Auth"] = auth_data.get("auth_token")
     HEADERS["Sid"] = auth_data.get("auth_sid")
 
@@ -39,8 +34,8 @@ def get_orders():
     except Exception as e:
         return None, f"Error fetching orders: {e}"
 
-    # Filter orders from today
     today_str = datetime.now().strftime("%d-%b-%Y")
+
     today_orders = [
         o for o in data
         if o.get("ordDtTm", "").startswith(today_str)
@@ -49,8 +44,8 @@ def get_orders():
     if not today_orders:
         return None, "No orders found today"
 
-    # Prepare DataFrame
     orders_list = []
+
     for o in today_orders:
         orders_list.append({
             "Symbol": o.get("sym"),
