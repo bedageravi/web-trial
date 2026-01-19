@@ -106,9 +106,7 @@ else:
         if isinstance(result, tuple) and isinstance(result[0], pd.DataFrame):
             df_positions, summary = result
 
-            # -------------------------
             # Section Header
-            # -------------------------
             st.markdown('<h3 style="color:white; font-weight:bold;">📊 MTF Positions</h3>', unsafe_allow_html=True)
 
             # Overall P&L metrics
@@ -132,7 +130,8 @@ else:
                                            .applymap(lambda x: 'color: black', subset=["Symbol"]) \
                                            .applymap(lambda x: 'color: white', subset=["Qty","AvgPrice","LTP"])
 
-            st.dataframe(styled_df, width='stretch', height=400)
+            # Display table with auto height, only actual rows
+            st.dataframe(styled_df, width='stretch', height='auto')
 
         else:
             st.warning(result[1] if result else "No positions found")
@@ -144,7 +143,7 @@ else:
         df_orders, msg_ord = get_orders()
         if df_orders is not None and not df_orders.empty:
             st.markdown('<h3 style="color:white; font-weight:bold;">🧾 Today\'s Orders</h3>', unsafe_allow_html=True)
-            st.dataframe(df_orders, width='stretch', height=300)
+            st.dataframe(df_orders, width='stretch', height='auto')
         else:
             st.warning(msg_ord)
 
