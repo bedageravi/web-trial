@@ -18,7 +18,7 @@ SUPABASE_SERVICE_KEY = st.secrets["kotak"]["anon_key"]
 # ------------------------
 # SUPABASE CLIENT
 # ------------------------
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+supabase = create_client(SUPABASE_URL, SUPABASE_anon_key)
 
 # ------------------------
 # GLOBAL HEADERS
