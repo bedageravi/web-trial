@@ -15,7 +15,7 @@ TOTP_SECRET = st.secrets["kotak"]["totp_secret"]
 SUPABASE_URL = st.secrets["kotak"]["url"]
 
 # ⚠️ USE SERVICE ROLE KEY (IMPORTANT)
-SUPABASE_SERVICE_KEY = st.secrets["kotak"]["service_key"]
+SUPABASE_SERVICE_KEY = st.secrets["kotak"]["anon_key"]
 
 # ==================================================
 # SUPABASE CLIENT
