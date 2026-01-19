@@ -7,7 +7,7 @@ from supabase import create_client
 import pandas as pd
 
 # ===============================
-# STREAMLIT SECRETS
+# SECRETS
 # ===============================
 ACCESS_TOKEN_SHORT = st.secrets["kotak"]["ACCESS_TOKEN_SHORT"]
 MOBILE = st.secrets["kotak"]["mobile"]
@@ -33,7 +33,7 @@ HEADERS = {
 }
 
 # ===============================
-# STREAMLIT PAGE CONFIG
+# PAGE CONFIG
 # ===============================
 st.set_page_config(page_title="ALGO TRADE ™", layout="wide")
 
@@ -42,20 +42,9 @@ st.set_page_config(page_title="ALGO TRADE ™", layout="wide")
 # ===============================
 st.markdown("""
 <style>
-[data-testid="stAppViewContainer"] {
-    background: linear-gradient(180deg, #2b2b2b, #000000);
-}
-[data-testid="stHeader"] {
-    background: rgba(0,0,0,0.0);
-}
-div.stButton > button {
-    background-color: white;
-    color: black;
-    font-weight: bold;
-    border-radius: 8px;
-    height: 42px;
-    width: 200px;
-}
+[data-testid="stAppViewContainer"] { background: linear-gradient(180deg, #2b2b2b, #000000); }
+[data-testid="stHeader"] { background: rgba(0,0,0,0.0); }
+div.stButton > button { background-color: white; color: black; font-weight: bold; border-radius: 8px; height: 42px; width: 200px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -68,13 +57,10 @@ IMAGE_LIST = [
     "https://images.pexels.com/photos/5834234/pexels-photo-5834234.jpeg"
 ]
 selected_image = random.choice(IMAGE_LIST)
-
 st.markdown(
-    f"""
-    <div style="display:flex; justify-content:center; padding-top:20px;">
+    f"""<div style="display:flex; justify-content:center; padding-top:20px;">
         <img src="{selected_image}" style="width:420px; height:420px; border-radius:12px;" />
-    </div>
-    """,
+    </div>""",
     unsafe_allow_html=True
 )
 
@@ -89,45 +75,33 @@ st.markdown("""
 # HELPER FUNCTIONS
 # ===============================
 
-def get_latest_signal():
-    """Return latest signal from Supabase"""
-    try:
-        res = (
-            supabase.table("signals")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(1)
-            .execute()
-        )
-        if res.data:
-            return res.data[0]
-    except:
-        return None
-    return None
-
 def load_auth():
-    """Load latest session"""
+    """Load latest auth session"""
     try:
-        res = (
-            supabase.table("auth_sessions")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(1)
-            .execute()
-        )
+        res = supabase.table("auth_sessions").select("*").order("created_at", desc=True).limit(1).execute()
         if res.data:
             rec = res.data[0]
             HEADERS["Auth"] = rec["auth_token"]
             HEADERS["Sid"] = rec["auth_sid"]
             return rec
-    except:
+    except Exception:
         return None
+    return None
+
+def get_latest_signal():
+    """Fetch latest signal safely"""
+    try:
+        res = supabase.table("signals").select("*").order("created_at", desc=True).limit(1).execute()
+        if res.data:
+            return res.data[0]
+    except Exception as e:
+        st.warning(f"Supabase read warning (signals table missing?): {e}")
     return None
 
 def kotak_login(mpin_input: str):
     """Perform Kotak Neo login and save session"""
     try:
-        totp = pyotp.TOTP(TOTP_SECRET.strip().replace(" ","")).now()
+        totp = pyotp.TOTP(TOTP_SECRET.strip().replace(" ", "")).now()
     except Exception as e:
         return False, f"TOTP error: {e}"
 
@@ -198,17 +172,16 @@ def auto_login():
     latest_signal = get_latest_signal()
     now = datetime.now(timezone.utc)
 
-    # If latest signal is within last 4 hours, skip login
     if latest_signal:
         created = datetime.fromisoformat(latest_signal["created_at"])
         if now - created <= timedelta(hours=4):
             st.success("✅ Latest signal is fresh, using existing session")
             return load_auth()
 
-    # Otherwise, prompt MPIN
+    # MPIN input with unique key
     st.info("Latest signal is old or missing. Please login with MPIN.")
-    mpin = st.text_input("Enter MPIN", type="password")
-    if st.button("Login"):
+    mpin = st.text_input("Enter MPIN", type="password", key="mpin_input")
+    if st.button("Login", key="login_button"):
         success, msg = kotak_login(mpin)
         if success:
             st.success(msg)
@@ -223,7 +196,7 @@ def auto_login():
 auth_data = auto_login()
 
 if auth_data:
-    st.write("Current session token:", auth_data["auth_token"])
+    st.write("Session token:", auth_data["auth_token"])
     st.write("Base URL:", auth_data["base_url"])
     st.write("Session timestamp:", auth_data["created_at"])
 
