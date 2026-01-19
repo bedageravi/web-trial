@@ -1,42 +1,45 @@
 import streamlit as st
-from streamlit_autorefresh import st_autorefresh
-from login import login_page, load_auth, logout
-from positions import get_positions
-from orders import get_orders
+from datetime import datetime, timedelta, timezone
 import random
+import pyotp
+import requests
+from supabase import create_client
+import pandas as pd
 
-# ==================================================
-# PAGE CONFIG (MUST BE FIRST)
-# ==================================================
-st.set_page_config(
-    page_title="ALGO TRADE ™",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# ===============================
+# STREAMLIT SECRETS
+# ===============================
+ACCESS_TOKEN_SHORT = st.secrets["kotak"]["ACCESS_TOKEN_SHORT"]
+MOBILE = st.secrets["kotak"]["mobile"]
+UCC = st.secrets["kotak"]["ucc"]
+TOTP_SECRET = st.secrets["kotak"]["totp_secret"]
 
-# ==================================================
-# AUTO REFRESH (SAFE)
-# ==================================================
-st_autorefresh(interval=60 * 1000, limit=None, key="auto_refresh")
+SUPABASE_URL = st.secrets["kotak"]["url"]
+SUPABASE_SERVICE_KEY = st.secrets["kotak"]["service_key"]
 
-# ==================================================
-# SESSION INIT
-# ==================================================
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
+# ===============================
+# SUPABASE CLIENT
+# ===============================
+supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
-# ==================================================
-# CHECK AUTH FROM SUPABASE
-# ==================================================
-auth_data = load_auth()
-if auth_data:
-    st.session_state.logged_in = True
-else:
-    st.session_state.logged_in = False
+# ===============================
+# HEADERS FOR KOTAK API
+# ===============================
+HEADERS = {
+    "Auth": None,
+    "Sid": None,
+    "neo-fin-key": "neotradeapi",
+    "accept": "application/json"
+}
 
-# ==================================================
-# STYLE / BACKGROUND
-# ==================================================
+# ===============================
+# STREAMLIT PAGE CONFIG
+# ===============================
+st.set_page_config(page_title="ALGO TRADE ™", layout="wide")
+
+# ===============================
+# STYLE
+# ===============================
 st.markdown("""
 <style>
 [data-testid="stAppViewContainer"] {
@@ -56,15 +59,14 @@ div.stButton > button {
 </style>
 """, unsafe_allow_html=True)
 
-# ==================================================
+# ===============================
 # HERO IMAGE
-# ==================================================
+# ===============================
 IMAGE_LIST = [
     "https://images.pexels.com/photos/6770775/pexels-photo-6770775.jpeg",
     "https://wallpapercave.com/wp/wp9587572.jpg",
     "https://images.pexels.com/photos/5834234/pexels-photo-5834234.jpeg"
 ]
-
 selected_image = random.choice(IMAGE_LIST)
 
 st.markdown(
@@ -83,49 +85,172 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ==================================================
-# LOGIN OR DASHBOARD
-# ==================================================
-if not st.session_state.logged_in:
-    login_page()
+# ===============================
+# HELPER FUNCTIONS
+# ===============================
 
-else:
-    st.success("✅ Logged in successfully")
+def get_latest_signal():
+    """Return latest signal from Supabase"""
+    try:
+        res = (
+            supabase.table("signals")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if res.data:
+            return res.data[0]
+    except:
+        return None
+    return None
 
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("🔄 Refresh Dashboard"):
-            st.rerun()
+def load_auth():
+    """Load latest session"""
+    try:
+        res = (
+            supabase.table("auth_sessions")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if res.data:
+            rec = res.data[0]
+            HEADERS["Auth"] = rec["auth_token"]
+            HEADERS["Sid"] = rec["auth_sid"]
+            return rec
+    except:
+        return None
+    return None
 
-    with col2:
-        if st.button("🚪 Logout"):
-            logout()
-            st.rerun()
+def kotak_login(mpin_input: str):
+    """Perform Kotak Neo login and save session"""
+    try:
+        totp = pyotp.TOTP(TOTP_SECRET.strip().replace(" ","")).now()
+    except Exception as e:
+        return False, f"TOTP error: {e}"
 
-    st.divider()
+    headers = {
+        "Authorization": ACCESS_TOKEN_SHORT,
+        "neo-fin-key": "neotradeapi",
+        "Content-Type": "application/json"
+    }
 
-    # ==================================================
-    # POSITIONS
-    # ==================================================
-    with st.spinner("Fetching MTF Positions..."):
+    # Step 1: tradeApiLogin
+    try:
+        r1 = requests.post(
+            "https://mis.kotaksecurities.com/login/1.0/tradeApiLogin",
+            headers=headers,
+            json={"mobileNumber": MOBILE, "ucc": UCC, "totp": totp},
+            timeout=10
+        )
+        d1 = r1.json().get("data", {})
+        view_token = d1.get("token")
+        view_sid = d1.get("sid")
+    except Exception as e:
+        return False, f"Step1 failed: {e}"
+
+    if not view_token or not view_sid:
+        return False, "Invalid Step1 response"
+
+    # Step 2: tradeApiValidate
+    headers2 = headers.copy()
+    headers2["Auth"] = view_token
+    headers2["sid"] = view_sid
+
+    try:
+        r2 = requests.post(
+            "https://mis.kotaksecurities.com/login/1.0/tradeApiValidate",
+            headers=headers2,
+            json={"mpin": mpin_input},
+            timeout=10
+        )
+        d2 = r2.json().get("data", {})
+        auth_token = d2.get("token")
+        auth_sid = d2.get("sid")
+        base_url = d2.get("baseUrl")
+    except Exception as e:
+        return False, f"Step2 failed: {e}"
+
+    if not auth_token or not auth_sid or not base_url:
+        return False, "Invalid Step2 response"
+
+    # Save session
+    try:
+        supabase.table("auth_sessions").delete().neq("auth_token","").execute()
+        record = {
+            "auth_token": auth_token,
+            "auth_sid": auth_sid,
+            "base_url": base_url,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        supabase.table("auth_sessions").insert(record).execute()
+    except Exception as e:
+        return False, f"Supabase save failed: {e}"
+
+    HEADERS["Auth"] = auth_token
+    HEADERS["Sid"] = auth_sid
+    return True, "Kotak login successful ✅"
+
+def auto_login():
+    """Check latest signal; login only if old or missing"""
+    latest_signal = get_latest_signal()
+    now = datetime.now(timezone.utc)
+
+    # If latest signal is within last 4 hours, skip login
+    if latest_signal:
+        created = datetime.fromisoformat(latest_signal["created_at"])
+        if now - created <= timedelta(hours=4):
+            st.success("✅ Latest signal is fresh, using existing session")
+            return load_auth()
+
+    # Otherwise, prompt MPIN
+    st.info("Latest signal is old or missing. Please login with MPIN.")
+    mpin = st.text_input("Enter MPIN", type="password")
+    if st.button("Login"):
+        success, msg = kotak_login(mpin)
+        if success:
+            st.success(msg)
+            return load_auth()
+        else:
+            st.error(msg)
+    return None
+
+# ===============================
+# DASHBOARD
+# ===============================
+auth_data = auto_login()
+
+if auth_data:
+    st.write("Current session token:", auth_data["auth_token"])
+    st.write("Base URL:", auth_data["base_url"])
+    st.write("Session timestamp:", auth_data["created_at"])
+
+    # ---------------------
+    # Load positions
+    # ---------------------
+    try:
+        from positions import get_positions
         df_pos, pos_msg = get_positions()
-
         if df_pos is not None and not df_pos.empty:
             st.subheader("📊 MTF Positions")
             st.dataframe(df_pos, use_container_width=True)
         else:
             st.warning(pos_msg)
+    except Exception as e:
+        st.error(f"Positions load error: {e}")
 
-    st.divider()
-
-    # ==================================================
-    # ORDERS
-    # ==================================================
-    with st.spinner("Fetching Today's Orders..."):
+    # ---------------------
+    # Load orders
+    # ---------------------
+    try:
+        from orders import get_orders
         df_ord, ord_msg = get_orders()
-
         if df_ord is not None and not df_ord.empty:
             st.subheader("🧾 Today's Orders")
             st.dataframe(df_ord, use_container_width=True)
         else:
             st.warning(ord_msg)
+    except Exception as e:
+        st.error(f"Orders load error: {e}")
