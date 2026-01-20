@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 
-from login import login
+from login.py import login
 from positions import positions
 from orders import orders
 
