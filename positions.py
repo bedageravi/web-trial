@@ -1,41 +1,43 @@
+import json
+from pathlib import Path
 import pandas as pd
 import requests
-from login import get_auth_headers
+from login import login  # import login module for auth file
+
+HEADERS = {"Auth": None, "Sid": None, "neo-fin-key": "neotradeapi", "accept": "application/json"}
 
 def get_positions():
-    headers = get_auth_headers()
-    if not headers:
-        return None, "Auth token not found. Please login first."
+    """Fetch Kotak MTF positions from auth.json"""
+    auth_data = login.load_auth()
+    if not auth_data:
+        return None, "Auth file not found. Please login first."
 
-    base_url = headers.get("BASE_URL", headers.get("base_url", ""))
-    if not base_url:
-        return None, "BASE_URL missing. Please login again."
+    base_url = auth_data.get("BASE_URL")
+    HEADERS["Auth"] = auth_data.get("AUTH_TOKEN")
+    HEADERS["Sid"] = auth_data.get("AUTH_SID")
 
     try:
-        r = requests.get(f"{base_url}/quick/user/positions", headers=headers, timeout=10)
+        r = requests.get(f"{base_url}/quick/user/positions", headers=HEADERS, timeout=10)
         data = r.json().get("data", [])
     except Exception as e:
         return None, f"Error fetching positions: {e}"
 
-    # Filter MTF positions
+    # Filter only MTF positions
     mtf_positions = []
     for p in data:
         if p.get("prod") != "MTF":
             continue
-        qty = int(p.get("cfBuyQty", 0)) + int(p.get("flBuyQty", 0))
-        buy_amt = float(p.get("buyAmt", 0)) + float(p.get("cfBuyAmt", 0))
+        scrip = p.get("trdSym")
+        qty = int(p.get("cfBuyQty",0)) + int(p.get("flBuyQty",0))
+        avg_price = float(p.get("buyAmt",0)) + float(p.get("cfBuyAmt",0))
         mtf_positions.append({
-            "Symbol": p.get("trdSym"),
+            "Symbol": scrip,
             "Qty": qty,
-            "AvgPrice": round(buy_amt / qty, 2) if qty > 0 else 0
+            "AvgPrice": round(avg_price/qty,2) if qty>0 else 0
         })
 
     if not mtf_positions:
         return None, "No MTF positions found"
 
-    # Summary
-    total_pnl = sum([float(p.get("Qty",0)) * float(p.get("AvgPrice",0)) for p in mtf_positions])
-    total_pct = round(total_pnl / 1000, 2)  # example placeholder
-
-    summary = {"total_pnl": total_pnl, "total_pct": total_pct}
-    return pd.DataFrame(mtf_positions), summary
+    df_positions = pd.DataFrame(mtf_positions)
+    return df_positions, "Positions fetched successfully"
