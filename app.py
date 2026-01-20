@@ -1,16 +1,15 @@
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
-from login import login_page, load_auth
-from positions import get_positions
-from orders import get_orders
-from pathlib import Path
 import pandas as pd
 import random
+from login import login_page, get_auth_headers, logout
+from positions import get_positions
+from orders import get_orders
 
 # =============================
-# AUTO REFRESH (100 sec)
+# AUTO REFRESH (1 min)
 # =============================
-st_autorefresh(interval=100 * 1000, limit=None, key="auto_refresh")
+st_autorefresh(interval=100*1000, limit=None, key="auto_refresh")
 
 # =============================
 # PAGE CONFIG
@@ -47,7 +46,7 @@ h1, h2, h3, h4, h5 {
 # HERO TEXT
 # =============================
 st.markdown("""
-<div style="text-align:center; color:white;">
+<div style="text-align:center; color:white; padding-bottom:5px;">
     <h1 style="font-size:38px;">Build Your Emotional Discipline</h1>
     <h3 style="font-size:30px;">With Our Automated Trading System</h3>
 </div>
@@ -61,13 +60,12 @@ IMAGE_LIST = [
     "https://wallpapercave.com/wp/wp9587572.jpg",
     "https://images.pexels.com/photos/5834234/pexels-photo-5834234.jpeg"
 ]
-
 if "bg_image" not in st.session_state:
     st.session_state.bg_image = random.choice(IMAGE_LIST)
 
 st.markdown(
     f"""
-    <div style="display:flex; justify-content:center; padding:10px;">
+    <div style="display:flex; justify-content:center; padding-top:10px; padding-bottom:10px;">
         <img src="{st.session_state.bg_image}" style="width:500px; height:500px;" />
     </div>
     """,
@@ -78,78 +76,65 @@ st.markdown(
 # SUBHEADING
 # =============================
 st.markdown("""
-<div style="text-align:center; color:white; padding-bottom:25px;">
+<div style="text-align:center; color:white; padding-top:5px; padding-bottom:25px;">
     <h2 style="font-size:30px;">KOTAK ALGO TRADE ™</h2>
 </div>
 """, unsafe_allow_html=True)
 
 # =============================
-# AUTH CHECK (auth.json = truth)
+# SESSION INIT
 # =============================
-auth_data = load_auth()
-
-if not auth_data:
-    login_page()
-    st.stop()   # ⛔ stop app until login
-
-st.success("✅ Logged in. Fetching data...")
-
-# =============================
-# MANUAL REFRESH
-# =============================
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 if "manual_refresh" not in st.session_state:
     st.session_state.manual_refresh = 0
 
-if st.button("🔄 Refresh Dashboard"):
-    st.session_state.manual_refresh += 1
-
 # =============================
-# POSITIONS
+# LOGIN OR DASHBOARD
 # =============================
-with st.spinner("Fetching Positions..."):
-    result = get_positions()
+if not st.session_state.logged_in:
+    login_page()
+else:
+    st.success("✅ Logged in. Fetching data...")
 
-    if isinstance(result, tuple) and isinstance(result[0], pd.DataFrame):
-        df_positions, summary = result
+    if st.button("🔄 Refresh Dashboard"):
+        st.session_state.manual_refresh += 1
 
-        st.markdown('<h3>📊 MTF Positions</h3>', unsafe_allow_html=True)
-
-        # SAFE: check if summary is dict
-        if isinstance(summary, dict):
+    # -------------------------
+    # POSITIONS
+    # -------------------------
+    with st.spinner("Fetching Positions..."):
+        result = get_positions()
+        if isinstance(result, tuple) and isinstance(result[0], pd.DataFrame):
+            df_positions, summary = result
+            # Section Header
+            st.markdown('<h3 style="color:white; font-weight:bold;">📊 MTF Positions</h3>', unsafe_allow_html=True)
+            # Overall P&L metrics
             col1, col2 = st.columns(2)
-            col1.markdown(f"<h4>Overall P&L (₹): {summary.get('total_pnl', 0)}</h4>", unsafe_allow_html=True)
-            col2.markdown(f"<h4>Overall Return %: {summary.get('total_pct', 0)}</h4>", unsafe_allow_html=True)
+            col1.markdown(f'<h4 style="color:white; font-weight:bold;">Overall P&L (₹): {summary.get("total_pnl", 0)}</h4>', unsafe_allow_html=True)
+            col2.markdown(f'<h4 style="color:white; font-weight:bold;">Overall Return %: {summary.get("total_pct", 0)}</h4>', unsafe_allow_html=True)
+            # Table
+            styled_df = df_positions.style.set_properties(**{'color': 'black'})
+            st.dataframe(styled_df, width='stretch', height='auto')
         else:
-            st.warning("Summary data missing")
+            st.warning(result[1] if result else "No positions found")
 
-        styled_df = df_positions.style.map(lambda _: 'color: black')
-        st.dataframe(styled_df, use_container_width=True)
+    # -------------------------
+    # ORDERS
+    # -------------------------
+    with st.spinner("Fetching Orders..."):
+        df_orders, msg_ord = get_orders()
+        if df_orders is not None and not df_orders.empty:
+            st.markdown('<h3 style="color:white; font-weight:bold;">🧾 Today\'s Orders</h3>', unsafe_allow_html=True)
+            styled_orders = df_orders.style.set_properties(**{'color': 'black'})
+            st.dataframe(styled_orders, width='stretch', height='auto')
+        else:
+            st.warning(msg_ord)
 
-    else:
-        st.warning(result[1] if result else "No positions found")
+    st.divider()
 
-# =============================
-# ORDERS
-# =============================
-with st.spinner("Fetching Orders..."):
-    df_orders, msg = get_orders()
-
-    if df_orders is not None and not df_orders.empty:
-        st.markdown('<h3>🧾 Today\'s Orders</h3>', unsafe_allow_html=True)
-        styled_orders = df_orders.style.map(lambda _: 'color: black')
-        st.dataframe(styled_orders, use_container_width=True)
-    else:
-        st.warning(msg)
-
-st.divider()
-
-# =============================
-# LOGOUT
-# =============================
-AUTH_FILE = Path("auth.json")
-
-if st.button("Logout"):
-    if AUTH_FILE.exists():
-        AUTH_FILE.unlink()
-    st.success("Logged out successfully!")
-    st.rerun()
+    # -------------------------
+    # LOGOUT
+    # -------------------------
+    if st.button("Logout"):
+        logout()
