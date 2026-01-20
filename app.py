@@ -114,9 +114,13 @@ with st.spinner("Fetching Positions..."):
 
         st.markdown('<h3>📊 MTF Positions</h3>', unsafe_allow_html=True)
 
-        col1, col2 = st.columns(2)
-        col1.markdown(f"<h4>Overall P&L (₹): {summary['total_pnl']}</h4>", unsafe_allow_html=True)
-        col2.markdown(f"<h4>Overall Return %: {summary['total_pct']}</h4>", unsafe_allow_html=True)
+        # SAFE: check if summary is dict
+        if isinstance(summary, dict):
+            col1, col2 = st.columns(2)
+            col1.markdown(f"<h4>Overall P&L (₹): {summary.get('total_pnl', 0)}</h4>", unsafe_allow_html=True)
+            col2.markdown(f"<h4>Overall Return %: {summary.get('total_pct', 0)}</h4>", unsafe_allow_html=True)
+        else:
+            st.warning("Summary data missing")
 
         styled_df = df_positions.style.map(lambda _: 'color: black')
         st.dataframe(styled_df, use_container_width=True)
