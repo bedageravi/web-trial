@@ -6,12 +6,12 @@ from pathlib import Path
 import streamlit as st
 
 # ----------------------------
-# AUTH FILE
+# AUTH FILE (root folder)
 # ----------------------------
-AUTH_FILE = Path("login/auth.json")  # save token here
+AUTH_FILE = Path("auth.json")
 
 # ----------------------------
-# Kotak credentials (move to secrets)
+# Kotak credentials
 # ----------------------------
 try:
     ACCESS_TOKEN_SHORT = st.secrets["kotak"]["access_token"]
@@ -36,10 +36,9 @@ def logout():
     st.success("Logged out successfully. Please login again.")
 
 # ----------------------------
-# Step1 + Step2 login (MPIN required)
+# Step1 + Step2 login
 # ----------------------------
 def kotak_login(mpin_input: str, token_validity_hours: int = 12):
-    """Perform Kotak login and save auth.json"""
     totp = pyotp.TOTP(TOTP_SECRET).now()
     headers = {
         "Authorization": ACCESS_TOKEN_SHORT,
@@ -87,7 +86,6 @@ def kotak_login(mpin_input: str, token_validity_hours: int = 12):
         return False, f"Step2 error: {e}"
 
     # --- SAVE AUTH ---
-    AUTH_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(AUTH_FILE, "w") as f:
         json.dump({
             "AUTH_TOKEN": auth_token,
@@ -102,10 +100,9 @@ def kotak_login(mpin_input: str, token_validity_hours: int = 12):
     return True, "✅ Login successful"
 
 # ----------------------------
-# Load auth.json
+# Load auth.json safely
 # ----------------------------
 def load_auth():
-    """Return auth data if exists and valid"""
     try:
         if AUTH_FILE.exists():
             with open(AUTH_FILE, "r") as f:
@@ -120,7 +117,7 @@ def load_auth():
         return None
 
 # ----------------------------
-# Return headers for API calls
+# Headers for API
 # ----------------------------
 def get_auth_headers():
     data = load_auth()
@@ -134,7 +131,7 @@ def get_auth_headers():
     }
 
 # ----------------------------
-# Streamlit login page with 2-cycle retry
+# Streamlit login page
 # ----------------------------
 def login_page():
     st.subheader("🔐 Kotak Neo Login")
@@ -145,7 +142,7 @@ def login_page():
     if "login_msg" not in st.session_state:
         st.session_state.login_msg = ""
 
-    # Check old auth first
+    # 1️⃣ Try old auth first
     auth_data = load_auth()
     if auth_data and st.session_state.login_cycle == 0:
         st.session_state.logged_in = True
@@ -153,7 +150,7 @@ def login_page():
         st.session_state.login_cycle += 1
         return
 
-    # Ask for MPIN input for fresh login
+    # 2️⃣ Fresh login
     mpin = st.text_input("Enter MPIN", type="password")
     if st.button("Login"):
         with st.spinner("Logging in..."):
@@ -167,7 +164,7 @@ def login_page():
                     st.warning("Old auth failed. Please login fresh with MPIN.")
                     st.session_state.login_cycle = 0
 
-    # Display message
+    # Display message & logout button
     if st.session_state.logged_in:
         st.success(st.session_state.login_msg)
         if st.button("Logout"):
