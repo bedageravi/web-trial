@@ -12,6 +12,9 @@ MOBILE = "+919766728415"
 UCC = "XXTBL"
 TOTP_SECRET = "OBEESAYVC2V3IA5YYHCN6EB7UI"
 
+# =========================
+# AUTH FILE
+# =========================
 AUTH_FILE = Path("auth.json")
 
 HEADERS = {
@@ -21,6 +24,9 @@ HEADERS = {
     "accept": "application/json"
 }
 
+# =========================
+# KOTAK LOGIN LOGIC
+# =========================
 def kotak_login(mpin_input: str):
     totp = pyotp.TOTP(TOTP_SECRET).now()
 
@@ -58,18 +64,31 @@ def kotak_login(mpin_input: str):
     data2 = r2.json().get("data", {})
     auth_token = data2.get("token")
     auth_sid = data2.get("sid")
+    base_url = data2.get("baseUrl")
 
     if not auth_token or not auth_sid:
         return False, "Step 2 validation failed"
 
+    # SAVE AUTH
     with open(AUTH_FILE, "w") as f:
-        json.dump(data2, f, indent=2)
+        json.dump(
+            {
+                "AUTH_TOKEN": auth_token,
+                "AUTH_SID": auth_sid,
+                "BASE_URL": base_url
+            },
+            f,
+            indent=2
+        )
 
     HEADERS["Auth"] = auth_token
     HEADERS["Sid"] = auth_sid
 
     return True, "Kotak login successful"
 
+# =========================
+# STREAMLIT LOGIN PAGE
+# =========================
 def login_page():
     st.subheader("🔐 Kotak Neo Login")
 
@@ -82,3 +101,12 @@ def login_page():
             st.success(msg)
         else:
             st.error(msg)
+
+# =========================
+# LOAD AUTH FOR POSITIONS / ORDERS
+# =========================
+def load_auth():
+    if AUTH_FILE.exists():
+        with open(AUTH_FILE, "r") as f:
+            return json.load(f)
+    return None
