@@ -1,40 +1,38 @@
 import pandas as pd
 import requests
-from login import load_auth   # Supabase-based login
+import json
+from login import get_auth_headers  # Use new auth.json headers
 from datetime import datetime
-
-HEADERS = {
-    "Auth": None,
-    "Sid": None,
-    "neo-fin-key": "neotradeapi",
-    "accept": "application/json"
-}
 
 def get_orders():
     """
-    Fetch Kotak today’s orders using Supabase-authenticated login.
-    Returns a DataFrame of orders or None with message.
+    Fetch Kotak today’s orders using auth.json session.
+    Returns a DataFrame of today's orders or None with message.
     """
 
-    # Load latest auth from Supabase
-    auth_data = load_auth()
-    if not auth_data:
-        return None, "Auth token not found. Please login first."
+    # Load headers from auth.json
+    headers = get_auth_headers()
+    if not headers:
+        return None, "Auth token not found or expired. Please login first."
 
-    base_url = auth_data.get("base_url")
-    if not base_url:
-        return None, "BASE_URL missing. Please login again."
+    # Get base_url from auth.json
+    try:
+        with open("auth.json", "r") as f:
+            data = json.load(f)
+        base_url = data.get("BASE_URL")
+        if not base_url:
+            return None, "BASE_URL missing. Please login again."
+    except Exception as e:
+        return None, f"Error reading auth.json: {e}"
 
-    # Set headers
-    HEADERS["Auth"] = auth_data.get("auth_token")
-    HEADERS["Sid"] = auth_data.get("auth_sid")
-
+    # Fetch orders from API
     try:
         r = requests.get(
             f"{base_url}/quick/user/orders",
-            headers=HEADERS,
+            headers=headers,
             timeout=10
         )
+        r.raise_for_status()
         data = r.json().get("data", [])
     except Exception as e:
         return None, f"Error fetching orders: {e}"
