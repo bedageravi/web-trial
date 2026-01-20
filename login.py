@@ -4,13 +4,12 @@ import requests
 import streamlit as st
 from pathlib import Path
 
-# =========================
-# TEMP HARD-CODED (TEST ONLY)
-# =========================
-ACCESS_TOKEN_SHORT = "ce5191a8-b2d3-44ff-bc3c-65970498e2f0"
-MOBILE = "+919766728415"
-UCC = "XXTBL"
-TOTP_SECRET = "OBEESAYVC2V3IA5YYHCN6EB7UI"
+
+ACCESS_TOKEN_SHORT = st.secrets["kotak"]["access_token"]
+MOBILE = st.secrets["kotak"]["mobile"]
+UCC = st.secrets["kotak"]["ucc"]
+TOTP_SECRET = st.secrets["kotak"]["totp_secret"]
+
 
 # =========================
 # AUTH FILE
