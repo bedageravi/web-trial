@@ -30,19 +30,13 @@ if not st.session_state.logged_in:
 # =============================
 st.success("Welcome! Login successful 🎉")
 
-col1, col2 = st.columns(2)
-
-with col1:
-    if st.button("📊 Load Positions"):
-        with st.spinner("Fetching positions..."):
-            df, msg = get_positions()
-            if df is not None:
-                st.dataframe(df, use_container_width=True)
-            else:
-                st.warning(msg)
-
-with col2:
-    st.info("👉 Orders section will come here")
+if st.button("📊 Load Positions"):
+    with st.spinner("Fetching positions..."):
+        df, msg = get_positions()
+        if df is not None:
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.warning(msg)
 
 st.divider()
 
